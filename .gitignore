@@ -1,0 +1,7 @@
+*.egg-info
+.env
+.forecastingenv
+.vscode
+.private
+.dockerignore
+build

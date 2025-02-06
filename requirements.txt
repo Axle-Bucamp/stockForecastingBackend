@@ -1,0 +1,9 @@
+yfinance
+pandas
+torch
+typing
+schedule
+asyncio
+fastapi
+uvicorn
+python-multipart
