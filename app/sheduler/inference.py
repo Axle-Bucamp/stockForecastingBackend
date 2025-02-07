@@ -12,7 +12,11 @@ from pandas import DataFrame, DateOffset
 import redis
 from os import getenv
 
-redis_client = redis.Redis(host=getenv("REDIS_HOST", 'localhost'), port=getenv("REDIS_PORT", 'localhost'), db=0)
+redis_client = redis.Redis(
+    host=getenv("REDIS_HOST", "localhost"), 
+    port=int(getenv("REDIS_PORT", "6379")),  # Ensure port is an integer
+    db=0
+)
 
 if cuda.is_available() and not device:
     device = device('cuda:0')
@@ -46,6 +50,7 @@ def predict_daily():
 
         df_result = DataFrame()
         df_result.index = df[tickers[0] + "_close"].iloc[-100:].index
+        df_result["Date"] = df_result.index
         for ticker in tickers:
             sequence = tensor(sequences_dict[ticker]).float()  # Convert to tensor
             

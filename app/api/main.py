@@ -6,12 +6,17 @@ from datamodel.sequence import SequenceRequest
 from datamodel.ticker_cluster import TKGroup, TKGroupName
 import redis
 from os import getenv
+from io import StringIO
 
 # FastAPI App Initialization
 app = FastAPI()
 
 # Initialize Redis client (adjust host, port, db as needed)
-redis_client = redis.Redis(host=getenv("REDIS_HOST", 'localhost'), port=getenv("REDIS_PORT", 'localhost'), db=0)
+redis_client = redis.Redis(
+    host=getenv("REDIS_HOST", "localhost"), 
+    port=int(getenv("REDIS_PORT", "6379")),  # Ensure port is an integer
+    db=0
+)
 
 def load_data_for_group(group_name: str) -> pd.DataFrame:
     """
@@ -32,7 +37,7 @@ def load_data_for_group(group_name: str) -> pd.DataFrame:
         if not json_data:
             raise HTTPException(status_code=404, detail=f"No data found in Redis for group '{group_name}'")
         # Decode the JSON bytes to string and convert to DataFrame.
-        json_str = json_data.decode('utf-8')
+        json_str = StringIO(json_data.decode('utf-8'))
         df = pd.read_json(json_str, orient="records")
         # Ensure the date column is parsed correctly (assumes column name "Date")
         if "Date" in df.columns:

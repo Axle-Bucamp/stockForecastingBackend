@@ -49,10 +49,25 @@ services:
     image: hygdra_forecasting_api:latest
     container_name: hygdra_forecasting_api
     ports:
-      - "8000:8000"  # Adjust this if your application exposes a different port.
+      - "7060:7060"  # Adjust this if your application exposes a different port.
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - app_net
+
+  hygdra_forecasting_frontend:
+    build: ./app/frontend
+    image: hygdra_forecasting_frontend:latest
+    container_name: hygdra_forecasting_frontend
+    ports:
+      - "8000:8000"  # Adjust this if your application exposes a different port.
+    environment:
+      - API_HOST=hygdra_forecasting_api
+      - API_PORT=7060
     depends_on:
       - redis
     restart: unless-stopped
