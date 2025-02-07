@@ -61,6 +61,7 @@ def predict_daily():
             df_result[ticker + "_pred"] = predictions.reshape(-1)[-100:] * dict_unorm[ticker][1] + dict_unorm[ticker][0]
             df_result[ticker + "_close"] = df[ticker + '_close'].iloc[-100:] * dict_unorm[ticker][1] + dict_unorm[ticker][0]
         
+            print(dict_unorm[ticker][1], dict_unorm[ticker][0])
         df_result["pred_date"] =  df_result.index + DateOffset(days=14)
      
         # Return the prediction (for simplicity, we return raw output here)

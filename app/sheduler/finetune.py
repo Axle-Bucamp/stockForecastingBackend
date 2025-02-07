@@ -18,13 +18,13 @@ else:
 # for one group
 def finetune_one(tickers:List[str], path:str):
     dataset = StockDataset(ticker=tickers)
-    dataloader = DataLoader(dataset, batch_size=64, shuffle=True, num_workers=1)
+    dataloader = DataLoader(dataset, batch_size=128, shuffle=True, num_workers=1)
 
     input_sample, _ = dataset.__getitem__(0)
     model = ConvCausalLTSM(input_shape=input_sample.shape)
 
-    model.load_state_dict(load('weight/best_model.pt', weights_only=True))  
-    model = train_model(model, dataloader, epochs=10, learning_rate=0.03, save_epoch=False, lrfn=CosineWarmup(0.03, 10).lrfn)
+    model.load_state_dict(load('weight/epoch-320_loss-0.025.pt', weights_only=True))  
+    model = train_model(model, dataloader, epochs=5, learning_rate=0.0003, save_epoch=False, lrfn=CosineWarmup(0.0003, 5).lrfn)
     save(model.state_dict(), path)
     
 # for all groups
