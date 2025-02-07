@@ -1,94 +1,134 @@
+---
+
 # Hygdra Forecasting 🚀
 
 **Hygdra Forecasting** est un algorithme rapide et optimisé pour la prévision des tendances boursières, conçu pour aider les traders à prendre des décisions plus sûres et à maximiser leurs opportunités sur les marchés financiers.
 
 ---
 
-## 📌 Fonctionnalités  
+## 📌 Fonctionnalités
 
-- 📈 **Chargement et traitement avancé des données** via `yfinance`  
-- 🧠 **Modèles de deep learning** pour la prédiction des tendances  
-- 📊 **Extraction automatique de caractéristiques techniques** (Bollinger Bands, RSI, ROC, etc.)  
-- 🔥 **Optimisation dynamique du taux d'apprentissage** (scheduler Cosine Warmup)  
-- 🏗️ **Architecture modulaire et extensible** pour différents horizons temporels (journaliers, horaires, minutes)  
-- ⚡ **Compatibilité GPU pour un entraînement rapide**  
+- 📈 **Chargement et traitement avancé des données** via `yfinance`
+- 🧠 **Modèles de deep learning** pour la prédiction des tendances
+- 📊 **Extraction automatique de caractéristiques techniques** (Bollinger Bands, RSI, ROC, etc.)
+- 🔥 **Optimisation dynamique du taux d'apprentissage** (scheduler Cosine Warmup)
+- 🏗️ **Architecture modulaire et extensible** pour différents horizons temporels (journaliers, horaires, minutes)
+- ⚡ **Compatibilité GPU** pour un entraînement rapide
 
 ---
 
-## ⚙️ Installation  
+## ⚙️ Installation
 
-### 📋 Prérequis  
+### 📋 Prérequis
 
-- **Python** `>=3.8`  
-- **GPU compatible CUDA** (optionnel mais recommandé)  
-- **Minimum** : 2 cœurs CPU, 2 Go RAM  
+- **Python** `>=3.8`
+- **GPU compatible CUDA** (optionnel, mais recommandé)
+- **Minimum** : 2 cœurs CPU, 2 Go RAM
 
-### 🏗️ Installation locale  
+### 🏗️ Installation via Docker
 
-Il est recommandé d'exécuter le projet dans un environnement virtuel.  
+Utilisez Docker pour une configuration rapide et reproductible :
 
-**Sur Linux/macOS :**  
+```bash
+docker-compose up -d
+```
+
+> **Note :** Assurez-vous d'avoir installé Docker et Docker Compose sur votre machine.
+
+### 🏗️ Installation Locale
+
+Il est recommandé d'exécuter le projet dans un environnement virtuel.
+
+**Sur Linux/macOS :**
+
 ```bash
 python3 -m venv .hygdra_forecasting_env
 source .hygdra_forecasting_env/bin/activate
 ```
 
-**Sur Windows (PowerShell) :**  
-```powershell
+**Sur Windows (PowerShell) :**
+
+```bash
 python -m venv .hygdra_forecasting_env
 .hygdra_forecasting_env\Scripts\Activate
 ```
 
-Ensuite, installez les dépendances :  
+Ensuite, installez les dépendances :
+
 ```bash
 pip install -r requirements.txt
 pip install .
 ```
+
 ---
 
-## 🚀 Utilisation  
+## 🚀 Utilisation
 
-### 🔥 Entraîner un modèle  
+### 🔥 Entraîner un Modèle
+
+Pour entraîner un modèle, exécutez :
+
 ```bash
 python3 hygdra_forecasting/model/train.py
 ```
 
-### 🎯 Affiner un modèle sur un ETF sélectionné  
-1. **Sélectionnez les poids** du modèle entraîné  
-2. **Chargez-les dans** `app/api/finetune.py`  
-3. **Lancez l'entraînement finetune :**  
-   ```bash
-   python finetune.py
-   ```
+### 🎯 Affiner un Modèle sur un ETF Sélectionné
 
-### 📊 Effectuer une inférence  
+1. **Sélectionnez les poids** du modèle entraîné.
+2. **Chargez-les dans** `app/api/finetune.py`.
+3. **Lancez l'entraînement de fine-tuning :**
+
 ```bash
-python inference.py
+python app/scheduler/finetune.py
 ```
 
-### 🌍 Lancer l'API avec FastAPI  
+### 📊 Effectuer une Inférence
+
+Pour lancer une inférence, exécutez :
+
+```bash
+python app/scheduler/inference.py
+```
+
+### 🌍 Lancer l'API avec FastAPI
+
+Pour démarrer l'API FastAPI :
+
 ```bash
 uvicorn main:app --reload
 ```
 
 ---
 
-## 🤖 Automatisation  
-Pour automatiser l'exécution du modèle à intervalles réguliers :  
+## 🤖 Automatisation
+
+Pour automatiser l'exécution du modèle à intervalles réguliers, utilisez :
+
 ```bash
-python3 scheduler.py
+python app/scheduler/scheduler.py
 ```
 
 ---
-## 📜 Licence  
-Ce projet est sous licence **GNU**.  
 
-📧 **Contact** : Bucamp Axle - axle.bucamp@gmail.com  
+## 📜 Licence
 
-🚀 **Profitez du trading assisté par IA avec Hygdra Forecasting !** 🚀  
-  
-## TODO
-- Dockerised app
-- frontend
-- big data capable app
-- live mode kraken api
+Ce projet est sous licence **GNU**.
+
+---
+
+## 📧 Contact
+
+Bucamp Axle - [axle.bucamp@gmail.com](mailto:axle.bucamp@gmail.com)
+
+---
+
+## 🚀 Projets et Améliorations Futures
+
+- Tests unitaires et d'intégration
+- Mode en direct via l'API Kraken
+
+---
+
+Profitez du trading assisté par IA avec **Hygdra Forecasting** ! 🚀
+
+---

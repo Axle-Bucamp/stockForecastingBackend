@@ -9,8 +9,12 @@ from hygdra_forecasting.utils.preprocessing import ohlv_to_dataframe_inference, 
 from hygdra_forecasting.utils.learning_rate_sheduler import CosineWarmup
 from torch import tensor, float32, no_grad
 from pandas import DataFrame, DateOffset
+import redis
+from os import getenv
 
-if cuda.is_available():
+redis_client = redis.Redis(host=getenv("REDIS_HOST", 'localhost'), port=getenv("REDIS_PORT", 'localhost'), db=0)
+
+if cuda.is_available() and not device:
     device = device('cuda:0')
     print('Running on the GPU')
 else:
@@ -20,6 +24,11 @@ else:
 model = ConvCausalLTSM((36, 7)) 
 
 def predict_daily():
+    """
+    For each ticker group defined in TKGroup, load the corresponding model weights,
+    generate predictions on the last 100 data points, and store the resulting DataFrame 
+    as JSON in a Redis database.
+    """
     # get ticker groups
     groups_name = ''
     for group in TKGroup.__members__.values():
@@ -27,6 +36,7 @@ def predict_daily():
 
         # load group weight
         global model
+        global redis_client
         model.load_state_dict(load(f'weight/days/{groups_name}.pt', weights_only=True))
         model.eval()
         
@@ -50,6 +60,18 @@ def predict_daily():
      
         # Return the prediction (for simplicity, we return raw output here)
         df_result.to_csv(f'data/{groups_name}_days.csv')
+
+        # Convert the result DataFrame to JSON
+        json_data = df_result.to_json(orient="records", date_format="iso")
+        redis_key = f"{groups_name}_days"
+        
+        # Save the JSON data into Redis
+        try:
+            redis_client.set(redis_key, json_data)
+            print(f"Saved predictions for group '{groups_name}' to Redis with key '{redis_key}'")
+        except Exception as e:
+            print(f"Error saving predictions for group '{groups_name}' to Redis: {e}")
+            
 
 if __name__ == "__main__":
     predict_daily()

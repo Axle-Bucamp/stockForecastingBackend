@@ -1,6 +1,7 @@
-yfinance
 pandas
-torch
 typing
+asyncio
+fastapi
+uvicorn
 python-multipart
 redis

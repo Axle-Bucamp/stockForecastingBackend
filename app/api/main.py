@@ -4,11 +4,47 @@ import pandas as pd
 from typing import Optional, List
 from datamodel.sequence import SequenceRequest
 from datamodel.ticker_cluster import TKGroup, TKGroupName
+import redis
+from os import getenv
 
 # FastAPI App Initialization
 app = FastAPI()
 
+# Initialize Redis client (adjust host, port, db as needed)
+redis_client = redis.Redis(host=getenv("REDIS_HOST", 'localhost'), port=getenv("REDIS_PORT", 'localhost'), db=0)
+
 def load_data_for_group(group_name: str) -> pd.DataFrame:
+    """
+    Load stock data for a given group from Redis.
+    
+    Args:
+        group_name (str): The group name (e.g., "tech").
+    
+    Returns:
+        pd.DataFrame: DataFrame containing the stock data.
+    
+    Raises:
+        HTTPException: If reading the data from Redis fails.
+    """
+    try:
+        key = f"{group_name}_days"
+        json_data = redis_client.get(key)
+        if not json_data:
+            raise HTTPException(status_code=404, detail=f"No data found in Redis for group '{group_name}'")
+        # Decode the JSON bytes to string and convert to DataFrame.
+        json_str = json_data.decode('utf-8')
+        df = pd.read_json(json_str, orient="records")
+        # Ensure the date column is parsed correctly (assumes column name "Date")
+        if "Date" in df.columns:
+            df["Date"] = pd.to_datetime(df["Date"])
+        return df
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to load data for group '{group_name}' from Redis: {str(e)}"
+        )
+
+def load_data_for_group_from_file(group_name: str) -> pd.DataFrame:
     """
     Load stock data for a given group from a CSV file.
     

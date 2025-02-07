@@ -1,8 +1,76 @@
-# three part 
-# trainer
-# api backen and sheduler
-# api frontend 
-# redis db
-# csv to redis ou elastic / hash db
+version: "3.8"
 
-# volume weight shared
+services:
+  hygdra_forecasting_scheduler:
+    build: ./app/scheduler
+    image: hygdra_forecasting_scheduler:latest
+    container_name: hygdra_forecasting_scheduler
+    ports:
+      - "7060:7060"  # Adjust this if your application exposes a different port.
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    runtime: nvidia  # Requires Docker with NVIDIA runtime support
+    restart: unless-stopped
+    networks:
+      - app_net
+    volumes:
+      - shared_weight:/weight
+
+  hygdra_forecasting_fast_env:
+    build: .
+    image: hygdra_forecasting_fast_env:latest
+    container_name: hygdra_forecasting_fast_env
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    runtime: nvidia  # Requires Docker with NVIDIA runtime support
+    restart: unless-stopped
+    networks:
+      - app_net
+    volumes:
+      - shared_weight:/weight
+
+  hygdra_forecasting_api:
+    build: ./app/api
+    image: hygdra_forecasting_api:latest
+    container_name: hygdra_forecasting_api
+    ports:
+      - "8000:8000"  # Adjust this if your application exposes a different port.
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - app_net
+
+  redis:
+    image: redis:6
+    container_name: redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - app_net
+
+networks:
+  app_net:
+    driver: bridge
+
+volumes:
+  shared_weight:
