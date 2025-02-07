@@ -1,5 +1,5 @@
 *.egg-info
-*.pt
+*_weight.pth
 .env
 .forecastingenv
 .vscode

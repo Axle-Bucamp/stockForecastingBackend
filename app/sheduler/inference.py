@@ -1,13 +1,9 @@
 from hygdra_forecasting.model.build import ConvCausalLTSM
 from datamodel.ticker_cluster import TKGroup
 from torch import load
-from torch.utils.data import DataLoader
 from torch import cuda, device
-from hygdra_forecasting.dataloader.dataloader import StockDataset
-from hygdra_forecasting.model.train import train_model
 from hygdra_forecasting.utils.preprocessing import ohlv_to_dataframe_inference, dataframe_to_dataset_inference
-from hygdra_forecasting.utils.learning_rate_sheduler import CosineWarmup
-from torch import tensor, float32, no_grad
+from torch import tensor, no_grad
 from pandas import DataFrame, DateOffset
 import redis
 from os import getenv
