@@ -265,9 +265,9 @@ def ohlv_to_dataframe_inference(tickers:list[str], period:str="2y", interval:str
         STD = ticker_df.std()
 
         # Normalize the training features
+        dict_unorm[ticker] = (ticker_df[ticker+'_close'].mean(), ticker_df[ticker+'_close'].std())
         ticker_df = (ticker_df - MEAN) / STD
         ticker_data_frames.append(ticker_df)
-        dict_unorm[ticker] = (ticker_df[ticker+'_close'].mean(), ticker_df[ticker+'_close'].std())
         
     df = pd.concat(ticker_data_frames, axis=1)
     df.replace([np.inf, -np.inf], np.nan, inplace=True)

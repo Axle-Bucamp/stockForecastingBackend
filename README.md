@@ -1,5 +1,3 @@
----
-
 # Hygdra Forecasting 🚀
 
 **Hygdra Forecasting** est un algorithme rapide et optimisé pour la prévision des tendances boursières, conçu pour aider les traders à prendre des décisions plus sûres et à maximiser leurs opportunités sur les marchés financiers.

@@ -207,7 +207,7 @@ def get_data_by_stock(ticker: str):
     if f"{ticker}_close" not in df.columns:
         raise HTTPException(status_code=404, detail=f"Stock data for {ticker} not found.")
     
-    result = df[[f"{ticker}_close", f"{ticker}_pred", "Date"]]
+    result = df[[f"{ticker}_close", f"{ticker}_pred", "Date", "pred_date"]]
     return JSONResponse(content=result.to_json(orient="records", date_format="iso"))
 
 @app.get("/api/json/stockatdate/{ticker}/{date}")
@@ -238,7 +238,7 @@ def get_stock_at_date(ticker: str, date: str):
     if f"{ticker}_close" not in df.columns or f"{ticker}_pred" not in df.columns:
         raise HTTPException(status_code=404, detail=f"Stock data for {ticker} not found.")
     
-    result = df[df["Date"] == timestamp][[f"{ticker}_close", f"{ticker}_pred", "Date"]]
+    result = df[df["Date"] == timestamp][[f"{ticker}_close", f"{ticker}_pred", "Date", "pred_date"]]
     if result.empty:
         raise HTTPException(status_code=404, detail="No data found for the specified date.")
     
@@ -278,5 +278,5 @@ def get_stock_in_daterange(ticker: str, date_begin: str, date_end: str):
         raise HTTPException(status_code=404, detail=f"Stock data for {ticker} not found.")
     
     mask = (df["Date"] >= start_date) & (df["Date"] <= end_date)
-    result = df.loc[mask][[f"{ticker}_close", f"{ticker}_pred", "Date"]]
+    result = df.loc[mask][[f"{ticker}_close", f"{ticker}_pred", "Date", "pred_date"]]
     return JSONResponse(content=result.to_json(orient="records", date_format="iso"))

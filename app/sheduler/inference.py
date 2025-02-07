@@ -41,7 +41,8 @@ def predict_daily():
         # load group weight
         global model
         global redis_client
-        model.load_state_dict(load(f'weight/days/{groups_name}.pt', weights_only=True))
+        # f'weight/days/{groups_name}.pth'
+        model.load_state_dict(load(f'weight/days/{groups_name}.pth'))
         model.eval()
         
         # get inference

@@ -92,6 +92,7 @@ def update_data(n_clicks, selected_ticker):
     # Transformation des données
     if "Date" in df.columns:
         df["Date"] = pd.to_datetime(df["Date"]).dt.strftime('%Y-%m-%d')
+        df["pred_date"] = pd.to_datetime(df["pred_date"]).dt.strftime('%Y-%m-%d')
         df.sort_values("Date", inplace=True)
 
     # Création du Tableau
@@ -99,11 +100,12 @@ def update_data(n_clicks, selected_ticker):
                         title=f"Prix de clôture pour {selected_ticker}",
                         labels={"Date": "Date", f"{selected_ticker}_close": "Prix de Clôture"})
 
-    # Création du Graphique
-    fig_chart = px.line(df, x="Date",
+    # Création du Graphique 
+    # not express check forecasting front
+    fig_chart = px.line(df, x="pred_date",
                         y=[f"{selected_ticker}_close", f"{selected_ticker}_pred"],
                         title=f"Prédictions vs Réel - {selected_ticker}",
-                        labels={"Date": "Date"},
+                        labels={"Date": "pred_date"},
                         markers=True)
 
     return fig_table, fig_chart, ""

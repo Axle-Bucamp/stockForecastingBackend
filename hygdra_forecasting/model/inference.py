@@ -33,6 +33,7 @@ if __name__ == '__main__':
             predictions = model(sequence)
 
         predictions = predictions.squeeze().numpy() 
+        print(dict_unorm[ticker][1], dict_unorm[ticker][0])
         df_result[ticker + "_pred"] = predictions.reshape(-1)[-100:] * dict_unorm[ticker][1] + dict_unorm[ticker][0]
         df_result[ticker + "_close"] = df[ticker + '_close'].iloc[-100:] * dict_unorm[ticker][1] + dict_unorm[ticker][0]
 
