@@ -10,8 +10,8 @@ class TKGroup(Enum):
     TECH = ("tech", ["AAPL", "MSFT", "GOOGL"])
     FINANCE = ("finance", ["JPM", "GS", "BAC"])
     ENERGY = ("energy", ["XOM", "CVX", "BP"]) 
-    #DEFI = ("defi", ['AVAX-USD', 'LINK-USD', 'HBAR-USD', 'UNI-USD', 'STX-USD', 'AVEE-USD', 'OM-USD', 'FTM-USD', "INJ-USD"])
-    #WEB3 = ("web3", ['LINK-USD', 'ICP-USD', 'FET-USD', 'FIL-USD', "CRO-EUR", 'THETA-USD', 'GRT-USD'])
+    DEFI = ("defi", ['AVAX-USD', 'LINK-USD', 'HBAR-USD', 'UNI-USD', 'STX-USD', 'OM-USD', 'FTM-USD', "INJ-USD"])
+    WEB3 = ("web3", ['LINK-USD', 'ICP-USD', 'FET-USD', 'FIL-USD', "CRO-EUR", 'THETA-USD'])
     #MEMECOIN = ("memecoin", ['BONK-USD', 'NOT-USD', 'SHIB-USD', 'PEPECOIN-USD', 'DOGE-USD'])
 
 

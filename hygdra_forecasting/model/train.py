@@ -2,11 +2,11 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 import torch.optim.lr_scheduler as lr_scheduler
-from torch import save, load
+from torch import save, load, manual_seed, device, cuda
+from torch.backends import cudnn
 from hygdra_forecasting.model.eval import validate
 from hygdra_forecasting.utils.learning_rate_sheduler import CosineWarmup
 import os
-import torch
 
 # Training Loop
 def train_model(model:nn.Module, dataloader:DataLoader, val_dataloader:DataLoader=None, epochs:int=100, learning_rate:float=0.001, save_epoch=True, lrfn=CosineWarmup().lrfn, checkpoint_file=None):
@@ -26,7 +26,7 @@ def train_model(model:nn.Module, dataloader:DataLoader, val_dataloader:DataLoade
     Returns:
         nn.Module: train model
     """
-    criterion = nn.L1Loss() # You can adjust the penalty_factor
+    criterion = nn.MSELoss() # nn.L1Loss() # You can adjust the penalty_factor
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=0)
     scheduler = lr_scheduler.LambdaLR(optimizer, lrfn)
     best_val_loss = float('inf')
@@ -87,16 +87,16 @@ def train_model(model:nn.Module, dataloader:DataLoader, val_dataloader:DataLoade
 
 def setup_seed(seed):
     os.environ['PYTHONHASHSEED'] = str(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.deterministic = True
+    manual_seed(seed)
+    cuda.manual_seed_all(seed)
+    cudnn.deterministic = True
 
 if __name__ == '__main__':
     # Example Usage:
     # Assume you already have the StockDataset and DataLoader set up as shown earlier
-    from hygdra_forecasting.model.build import ConvCausalLTSM
+    from hygdra_forecasting.model.build import ConvCausalLTSM, GraphforecastPred
     from hygdra_forecasting.dataloader.dataloader import StockDataset
-    from torch import cuda, device
+
 
     if cuda.is_available():
         device = device('cuda:0')
@@ -105,8 +105,11 @@ if __name__ == '__main__':
         device = device('cpu')
         print('Running on the CPU')
 
-    tickers= ["INTC", "SQ", "XOM", "JPM", "GS", "CVX", "BA", "PFE", "PYPL", "SBUX", "DIS", "NFLX", 'GOOG', "NVDA", "JNJ", "META", "GOOGL", "AAPL", "MSFT", "BTC-EUR", "CRO-EUR", "ETH-USD", "CRO-USD", "INJ-USD", "BTC-USD", "BNB-USD", "XRP-USD", "ADA-USD", "SOL-USD"]
-    tickers_val = ["AMZN", "AMD", "ETH-EUR", "COST", "BP", "BAC"]
+    # work on model ? redo double chanel one conv causal the other as validator
+    # liquid net / graph like llm
+    tickers= ["DEFI", "PANW", "MRVL", "NKLA", "AFRM", "EBIT.TO", "^FCHI", "NKE", "^GSPC", "^IXIC", "BILL", "EXPE", 'LINK-USD', "TTWO", "NET", 'ICP-USD', 'FET-USD', 'FIL-USD', 'THETA-USD','AVAX-USD', 'HBAR-USD', 'UNI-USD', 'STX-USD', 'OM-USD', 'FTM-USD', "INJ-USD", "INTC", "SQ", "XOM", "COST", "BP", "BAC", "JPM", "GS", "CVX", "BA", "PFE", "PYPL", "SBUX", "DIS", "NFLX", 'GOOG', "NVDA", "JNJ", "META", "GOOGL", "AAPL", "MSFT", "BTC-EUR", "CRO-EUR", "ETH-USD", "CRO-USD", "BTC-USD", "BNB-USD", "XRP-USD", "ADA-USD", "SOL-USD"]
+    tickers_val = ["AMZN", "AMD", "ETH-EUR", "ELF", "UBER"]
+    TICKERS_ETF = ["^GSPC", "^FCHI", "^IXIC","EBIT.TO", "BTC-USD"]
 
     # tran data
     dataset = StockDataset(ticker=tickers)
@@ -119,6 +122,6 @@ if __name__ == '__main__':
     # Initialize your model
     input_sample, _ = dataset.__getitem__(0)
     setup_seed(20)
-    model = ConvCausalLTSM(input_shape=input_sample.shape)  # Modify this according to your dataset
+    model = GraphforecastPred(input_shape=input_sample.shape)  # Modify this according to your dataset
     model = train_model(model, dataloader, dataloader_val, epochs=100, learning_rate=0.01, lrfn=CosineWarmup(0.01, 100).lrfn)
 

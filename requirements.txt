@@ -4,3 +4,4 @@ torch
 typing
 python-multipart
 redis
+torch_geometric

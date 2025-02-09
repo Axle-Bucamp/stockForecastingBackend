@@ -6,6 +6,7 @@ import pandas as pd
 SEQUENCE_LEN = 36
 TIME_DELTA_LABEL = 12
 TICKERS = ["AMD", "INTC", "SQ", "BA", "PFE", "PYPL", "COST", "SBUX", "DIS", "NFLX", 'GOOG', "NVDA", "JNJ", "META", "BRK-B", "GOOGL", "AAPL", "MSFT", "AMZN", "BTC-EUR", "ETH-EUR", "CRO-EUR", "AMZN", "BTC-USD", "ETH-USD", "CRO-USD", "INJ-USD", "BTC-USD", "ETH-USD", "BNB-USD", "XRP-USD", "ADA-USD", "SOL-USD", "DOGE-USD", "DOT-USD", "MATIC-USD"]
+TICKERS_ETF = ["^GSPC", "^FCHI", "^IXIC","EBIT.TO", "BTC-USD"]
 
 def calculate_bollinger_bands(data:pd.DataFrame, window:int=10, num_of_std:int=2) -> tuple[pd.Series, pd.Series]:
     """
@@ -59,7 +60,36 @@ def calculate_roc(data: pd.DataFrame, periods:int=10) -> pd.Series:
     roc = ((data - data.shift(periods)) / data.shift(periods)) * 100
     return roc
 
-# vérifier
+def create_combine_sequences(data:list[np.array], labels:pd.Series, sequence_length:int=SEQUENCE_LEN, time_delta:int=TIME_DELTA_LABEL) -> tuple[np.array, np.array]:
+    """
+    Transforme une serie de cours en sequence ND
+
+    Args:
+        data (np.array): Série temporelle des prix de clôture.
+        label (pd.Series): valeur reel d evaluation
+        sequence_length (int): taille de la sequence temporel en entree
+        time_delta (int): ecart temporel entre les entree et la sortie a predire
+
+    Returns:
+        tuple[np.array, np.array] : training sequences, labels
+    """
+    sequences = []
+    lab = []
+    data_size = len(data[-1])
+
+    # Loop to create each sequence and its corresponding label
+    for i in range(data_size - (sequence_length + 13)): # Ensure we have data for the label
+        if i == 0:
+          continue
+        seq = []
+        for stock in data:
+            seq.append(stock[i:i + sequence_length])
+        sequences.append(np.array(seq))  # The sequence of data
+        lab.append( labels[i + time_delta] ) # The label and scaling factors
+
+    return np.array(sequences), np.array(lab)
+
+
 def create_sequences(data:np.array, labels:pd.Series, sequence_length:int=SEQUENCE_LEN, time_delta:int=TIME_DELTA_LABEL) -> tuple[np.array, np.array]:
     """
     Transforme une serie de cours en sequence ND
@@ -144,6 +174,92 @@ def ohlv_to_dataframe(tickers:list[str], period:str="2y", interval:str='1d'):
     labels = labels.iloc[:-1]
 
     return df, labels
+
+# indicateur:list[str]=TICKERS_ETF
+def dataframe_to_graph_dataset(df:pd.DataFrame, indic_data:pd.DataFrame, labels:pd.DataFrame, tickers:list[str]=TICKERS):
+    """
+    transforme un Dataset de stock OHVL en serie de sequence temporel
+
+    Args:
+        df (pd.DataFrame): Série temporelle des prix de clôture.
+        label (pd.DataFrame): ground truth
+        tickers (List[str]): list des courts a predire
+    Returns:
+        Tuple[np.array, np.array] : sequences, label
+    """
+    indics_ticker = []
+    for indics_col in indic_data.columns:
+        indic_tick = indics_col.split('_')[0]
+        if indic_tick not in indics_ticker:
+            indics_ticker.append(indic_tick)
+
+    arr = []
+    for indic_tick in indics_ticker:
+        # Extract close and volume data for the ticker
+        close = indic_data[indic_tick+'_close'].values
+        width = indic_data[indic_tick+'_width'].values
+        rsi = indic_data[indic_tick+'_rsi'].values
+        roc = indic_data[indic_tick+'_roc'].values
+        volume = indic_data[indic_tick+'_volume'].values
+        diff = indic_data[indic_tick+'_diff'].values
+        pct_change = indic_data[indic_tick+'_percent_change_close'].values
+
+        # Combine close and volume data
+        ticker_data = np.column_stack((close,
+                                    width,
+                                    rsi,
+                                    roc,
+                                    volume,
+                                    diff,
+                                    pct_change))
+        arr.append(ticker_data)
+
+    sequences_dict = {}
+    sequence_labels = {}
+    for ticker in tickers:
+        arr2 = arr.copy()
+        # Extract close and volume data for the ticker
+        close = df[ticker+'_close'].values
+        width = df[ticker+'_width'].values
+        rsi = df[ticker+'_rsi'].values
+        roc = df[ticker+'_roc'].values
+        volume = df[ticker+'_volume'].values
+        diff = df[ticker+'_diff'].values
+        pct_change = df[ticker+'_percent_change_close'].values
+
+        # Combine close and volume data
+        ticker_data = np.column_stack((close,
+                                    width,
+                                    rsi,
+                                    roc,
+                                    volume,
+                                    diff,
+                                    pct_change))
+        arr2.append(ticker_data)
+
+        # Generate sequences
+        attribute = ticker+"_close"
+        ticker_sequences, lab = create_combine_sequences(arr2,
+                                                labels[attribute].values[SEQUENCE_LEN-1:])
+
+        sequences_dict[ticker] = ticker_sequences
+        sequence_labels[ticker] = lab
+    
+    # Combine data and labels from all tickers
+    all_sequences = []
+    all_labels = []
+
+    for ticker in tickers:
+        all_sequences.extend(sequences_dict[ticker])
+        all_labels.extend(sequence_labels[ticker])
+
+    # Convert to numpy arrays
+    all_sequences = np.array(all_sequences)
+    all_labels = np.array(all_labels)
+
+    # split in another func ?
+    return all_sequences, all_labels
+
 
 def dataframe_to_dataset(df:pd.DataFrame, labels:pd.DataFrame, tickers:list[str]=TICKERS):
     """
