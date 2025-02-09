@@ -68,7 +68,7 @@ class LtsmAttentionforecastPred(nn.Module):
         dropout (float): Dropout rate for regularization
     """
     def __init__(self, input_shape, dropout: float = 0.2):
-        super(GraphforecastPred, self).__init__()
+        super(LtsmAttentionforecastPred, self).__init__()
 
         # Convolutional feature extractor
         self.conv1 = nn.Conv1d(in_channels=input_shape[0], out_channels=64, kernel_size=5, padding=2)

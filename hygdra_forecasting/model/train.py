@@ -8,8 +8,8 @@ from hygdra_forecasting.model.eval import validate
 from hygdra_forecasting.utils.learning_rate_sheduler import CosineWarmup
 import os
 
-# Training Loop
-def train_model(model:nn.Module, dataloader:DataLoader, val_dataloader:DataLoader=None, epochs:int=100, learning_rate:float=0.001, save_epoch=True, lrfn=CosineWarmup().lrfn, checkpoint_file=None):
+# Training Loop # generalised loss call
+def train_model(model:nn.Module, dataloader:DataLoader, val_dataloader:DataLoader=None, epochs:int=100, learning_rate:float=0.001, save_epoch=True, lrfn=CosineWarmup().lrfn, checkpoint_file=None, criterion=nn.MSELoss()):
     """
     Train a deep learning model using pytorch framework adapted for this case study
     save directory ./weight
@@ -26,7 +26,7 @@ def train_model(model:nn.Module, dataloader:DataLoader, val_dataloader:DataLoade
     Returns:
         nn.Module: train model
     """
-    criterion = nn.MSELoss() # nn.L1Loss() # You can adjust the penalty_factor
+    # nn.L1Loss() # You can adjust the penalty_factor
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=0)
     scheduler = lr_scheduler.LambdaLR(optimizer, lrfn)
     best_val_loss = float('inf')
@@ -94,7 +94,7 @@ def setup_seed(seed):
 if __name__ == '__main__':
     # Example Usage:
     # Assume you already have the StockDataset and DataLoader set up as shown earlier
-    from hygdra_forecasting.model.build import ConvCausalLTSM, GraphforecastPred
+    from hygdra_forecasting.model.build import ConvCausalLTSM, LtsmAttentionforecastPred
     from hygdra_forecasting.dataloader.dataloader import StockDataset
 
 
@@ -122,6 +122,6 @@ if __name__ == '__main__':
     # Initialize your model
     input_sample, _ = dataset.__getitem__(0)
     setup_seed(20)
-    model = GraphforecastPred(input_shape=input_sample.shape)  # Modify this according to your dataset
+    model = LtsmAttentionforecastPred(input_shape=input_sample.shape)  # Modify this according to your dataset
     model = train_model(model, dataloader, dataloader_val, epochs=100, learning_rate=0.01, lrfn=CosineWarmup(0.01, 100).lrfn)
 
