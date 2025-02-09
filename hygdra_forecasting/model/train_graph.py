@@ -1,7 +1,7 @@
 if __name__ == '__main__':
     # Example Usage:
     # Assume you already have the StockDataset and DataLoader set up as shown earlier
-    from hygdra_forecasting.model.build import GraphforecastPred
+    from hygdra_forecasting.model.build import GraphforecastPred, LtsmAttentionforecastPred, ConvCausalLTSM
     from hygdra_forecasting.dataloader.GraphDataloader import StockGraphDataset
     from hygdra_forecasting.model.train import train_model, setup_seed
     from torch.utils.data import DataLoader
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     # Initialize your model
     input_sample, _ = dataset.__getitem__(0)
     setup_seed(20)
-    model = GraphforecastPred(input_shape=input_sample.shape)  # Modify this according to your dataset
+    model = LtsmAttentionforecastPred(input_shape=input_sample.shape)  # Modify this according to your dataset
     # dataloader_val
-    model = train_model(model, dataloader, val_dataloader=dataloader_val, epochs=200, learning_rate=0.1, lrfn=CosineWarmup(0.1, 200).lrfn)
+    model = train_model(model, dataloader, val_dataloader=dataloader_val, epochs=200, learning_rate=0.03, lrfn=CosineWarmup(0.03, 200).lrfn)
 

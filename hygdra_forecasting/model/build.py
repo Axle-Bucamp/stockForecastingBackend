@@ -213,3 +213,6 @@ class GraphforecastPred(nn.Module):
         x = self.activation(x)
 
         return x
+    
+    # liquid like model
+    # llm like model
