@@ -1,7 +1,7 @@
 if __name__ == '__main__':
     # Example Usage:
     # Assume you already have the StockDataset and DataLoader set up as shown earlier
-    from hygdra_forecasting.model.build import GraphforecastPred
+    from hygdra_forecasting.model.build_graph import GraphforecastPred
     from hygdra_forecasting.dataloader.GraphDataloader import StockGraphDataset
     from hygdra_forecasting.model.train import train_model, setup_seed
     from torch.utils.data import DataLoader
@@ -33,4 +33,5 @@ if __name__ == '__main__':
     setup_seed(20)
     model = GraphforecastPred(input_shape=input_sample.shape)  # Modify this according to your dataset
 
+    # seems to loose context -> fix infrastructure
     model = train_model(model, dataloader, val_dataloader=dataloader_val, epochs=100, learning_rate=0.01, lrfn=CosineWarmup(0.01, 100).lrfn, checkpoint_file=load('weight/best_model.pth'), criterion=nn.L1Loss())
