@@ -17,16 +17,18 @@ if __name__ == '__main__':
 
     # eliminer les mauvais stock ajuster learning rate + liquid net
     tickers= ["DEFI", "PANW", "MRVL", "NKLA", "AFRM", "NKE", "BILL", "EXPE", 'LINK-USD', "TTWO", "NET", 'THETA-USD','AVAX-USD', 'HBAR-USD', 'UNI-USD', 'STX-USD', "INTC", "SQ", "XOM", "COST", "BP", "BAC", "JPM", "GS", "CVX", "BA", "PFE", "PYPL", "SBUX", "DIS", "NFLX", 'GOOG', "NVDA", "JNJ", "META", "GOOGL", "AAPL", "MSFT", "BTC-EUR", "ETH-USD", "BTC-USD", "BNB-USD", "XRP-USD", "ADA-USD", "SOL-USD"]
+    # tickers = ["BTC-USD"]
     tickers_val = ["AMZN", "AMD", "ETH-EUR", "ELF", "UBER"]
-    TICKERS_ETF = ["DEFI", "^FCHI", "^IXIC","EBIT.TO", "IXC"] # 7 min
+    TICKERS_ETF = ["^GSPC", "^FCHI", "^IXIC", "EBIT.TO", "BTC-USD"] # 7 min
+    # TICKERS_ETF = ["BTC-USD"]
 
     # tran data
     dataset = StockGraphDataset(ticker=tickers, indics=TICKERS_ETF)
-    dataloader = DataLoader(dataset, batch_size=128, shuffle=True, num_workers=1)
+    dataloader = DataLoader(dataset, batch_size=32, shuffle=True, num_workers=1)
 
     # val data
     dataset_val = StockGraphDataset(ticker=tickers_val, indics=TICKERS_ETF)
-    dataloader_val = DataLoader(dataset_val, batch_size=128, shuffle=True, num_workers=1)
+    dataloader_val = DataLoader(dataset_val, batch_size=32, shuffle=True, num_workers=1)
 
     # Initialize your model
     input_sample, _ = dataset.__getitem__(0)

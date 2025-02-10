@@ -81,11 +81,14 @@ def create_combine_sequences(data:list[np.array], labels:pd.Series, sequence_len
     for i in range(data_size - (sequence_length + 13)): # Ensure we have data for the label
         if i == 0:
           continue
-        seq = []
-        for stock in data:
-            seq.append(stock[i:i + sequence_length])
-        sequences.append(np.array(seq))  # The sequence of data
-        lab.append( labels[i + time_delta] ) # The label and scaling factors
+        try :
+            seq = []
+            for stock in data:
+                seq.append(stock[i:i + sequence_length])
+            sequences.append(np.array(seq))  # The sequence of data
+            lab.append( labels[i + time_delta] ) # The label and scaling factors
+        except: # not homogenouis -> correct shape, detect wrong ticker
+            continue
 
     return np.array(sequences), np.array(lab)
 

@@ -127,8 +127,8 @@ class GraphTransformerforecastPred(nn.Module):
         # reduce batch enhance depth
         self.graph = GraphTransformer(
             dim = 7, # num feature
-            depth = 2,
-            edge_dim = 5,  # stock -1  ?# optional - if left out, edge dimensions is assumed to be the same as the node dimensions above
+            depth = 4,
+            edge_dim = 5,  # stock -1 ? # optional - if left out, edge dimensions is assumed to be the same as the node dimensions above
             with_feedforwards = True,   # whether to add a feedforward after each attention layer, suggested by literature to be needed
             gated_residual = True,      # to use the gated residual to prevent over-smoothing
             rel_pos_emb = True          # set to True if the nodes are ordered, default to False
@@ -142,9 +142,16 @@ class GraphTransformerforecastPred(nn.Module):
         edges = x[:, :, :, :-1]
 
         # Transform edges (batch, 36, 7, 5) -> (batch, 36, 36, 5)
-        # TODO better transform causal matmul ?
         edges = self.edge_transform(edges.permute(0, 1, 3, 2))  # (batch, 36, 5, 36)
-        edges = edges.permute(0, 1, 3, 2)  # (batch, 36, 36, 5)
+        edges = edges.permute(0, 1, 3, 2)  # (batch, 36, 36, 5) 
+
+        # Edge refinement using node interaction 
+        # TODO 
+        # add a selection network for node 
+        # must keep shape, must understand type of net compared to edge
+        temp_node = node.mean(dim=2).unsqueeze(-1).unsqueeze(-1) # batch, 36, 1, 1
+        edges = temp_node * F.relu(edges) # (batch, 36, 36, 5) 
+        edges = F.softmax(edges, dim=-1)  # (batch, 36, 36, 5) 
 
         nodes, edges = self.graph(node, edges)
         x =  self.convCausal(nodes)
