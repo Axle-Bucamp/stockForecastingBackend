@@ -1,3 +1,13 @@
+    
+import torch
+import math
+import torch.nn as nn
+from torch.nn import functional as F
+from torch_geometric.nn import GCNConv  
+from torch_geometric.utils import dense_to_sparse  
+from graph_transformer_pytorch import GraphTransformer
+from hygdra_forecasting.model.build import ConvCausalLTSM
+
 class GraphforecastPred(nn.Module):
     """
     Graph-based Stock Forecasting Model with Transformer
@@ -42,6 +52,7 @@ class GraphforecastPred(nn.Module):
         # **Fully Connected Output**
         self.fc = nn.Linear(128, 1)
         self.activation = nn.LeakyReLU(0.1)
+
     def forward(self, x):
         """
         Forward pass with GCN and Transformer
@@ -98,4 +109,43 @@ class GraphforecastPred(nn.Module):
         x = self.fc(x)
         x = self.activation(x)
 
+        return x
+
+class GraphTransformerforecastPred(nn.Module):
+    """
+    Graph-based Stock Forecasting Model with Transformer
+
+    Parameters:
+        input_shape (tuple[int]): (num_features, sequence_length)
+        num_stocks (int): Number of stocks (nodes in the graph)
+        dropout (float): Dropout rate for regularization
+    """
+    def __init__(self, input_shape):
+        super(GraphTransformerforecastPred, self).__init__()
+        num_stocks, seq_len, num_features = input_shape
+        self.edge_transform = nn.Linear(num_features, seq_len)  # Learnable mapping from 7 to 36
+        # reduce batch enhance depth
+        self.graph = GraphTransformer(
+            dim = 7, # num feature
+            depth = 2,
+            edge_dim = 5,  # stock -1  ?# optional - if left out, edge dimensions is assumed to be the same as the node dimensions above
+            with_feedforwards = True,   # whether to add a feedforward after each attention layer, suggested by literature to be needed
+            gated_residual = True,      # to use the gated residual to prevent over-smoothing
+            rel_pos_emb = True          # set to True if the nodes are ordered, default to False
+        )
+        self.convCausal = ConvCausalLTSM(input_shape=(seq_len, num_features))
+
+    def forward(self, x):
+        # inject in dataset graph options adj mat, nodes
+        x = x.permute(0, 2, 3, 1)
+        node = x[:, :, :, -1]
+        edges = x[:, :, :, :-1]
+
+        # Transform edges (batch, 36, 7, 5) -> (batch, 36, 36, 5)
+        # TODO better transform causal matmul ?
+        edges = self.edge_transform(edges.permute(0, 1, 3, 2))  # (batch, 36, 5, 36)
+        edges = edges.permute(0, 1, 3, 2)  # (batch, 36, 36, 5)
+
+        nodes, edges = self.graph(node, edges)
+        x =  self.convCausal(nodes)
         return x
