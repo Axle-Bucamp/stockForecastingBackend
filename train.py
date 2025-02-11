@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
     # temp (non distinct loss and balance) seq val on known stock
     lenval = len(dataset_val)
-    indval = len(dataset) // 2  # Select half the dataset
+    indval = int(len(dataset) / 1.3)  # Select half the dataset
 
     # Ensure index bounds are valid 
     if indval > 0:
@@ -52,8 +52,14 @@ if __name__ == '__main__':
 
     # Initialize your model
     input_sample, _ = dataset.__getitem__(0)
+
+    # clear a bit of memory
+    del mask
+    del random_indices
+
     setup_seed(20) # test liquid ? # check shaping and batch computation based on Dataset
     model = ConvCausalLTSM(input_shape=input_sample.shape)
-    # LtsmAttentionforecastPred(input_shape=input_sample.shape)
+    del input_sample
+    # LtsmAttentionforecastPred, ConvCausalLTSM
     model = train_model(model, dataloader, dataloader_val, epochs=100, learning_rate=0.01, lrfn=CosineWarmup(0.01, 100).lrfn)
 

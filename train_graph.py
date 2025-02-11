@@ -33,7 +33,7 @@ if __name__ == '__main__':
 
     # temp (non distinct loss and balance) seq val on known stock
     lenval = len(dataset_val)
-    indval = len(dataset) // 2  # Select half the dataset
+    indval = int(len(dataset) / 1.3)   # Select half the dataset
 
     # Ensure index bounds are valid 
     if indval > 0:
@@ -50,11 +50,17 @@ if __name__ == '__main__':
 
         dataset.data = dataset.data[mask]
         dataset.label = dataset.label[mask]
-
+    
     # Initialize your model
     input_sample, _ = dataset.__getitem__(0)
+
+    # clear a bit of memory
+    del mask
+    del random_indices
+
     setup_seed(20)
     #model = GraphforecastPred(input_shape=input_sample.shape)  # Modify this according to your dataset
     model = GraphTransformerforecastPred(input_shape=input_sample.shape)
+    del input_sample
     # seems to loose context -> fix infrastructure , checkpoint_file=load('weight/best_model.pth')
     model = train_model(model, dataloader, val_dataloader=dataloader_val, epochs=100, learning_rate=0.01, lrfn=CosineWarmup(0.01, 100).lrfn, criterion=nn.L1Loss())
