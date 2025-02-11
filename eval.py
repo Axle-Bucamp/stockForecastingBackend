@@ -3,6 +3,8 @@ if __name__ == "__main__":
     from hygdra_forecasting.dataloader.dataloader import StockDataset
     from hygdra_forecasting.model.eval import validate
     from torch import cuda, device
+    from torch.utils.data import DataLoader
+    import torch.nn as nn
     from torch import load
 
     if cuda.is_available():
