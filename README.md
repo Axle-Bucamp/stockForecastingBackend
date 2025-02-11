@@ -10,20 +10,20 @@
 - 🧠 **Modèles de deep learning** pour la prédiction des tendances
 - 📊 **Extraction automatique de caractéristiques techniques** (Bollinger Bands, RSI, ROC, etc.)
 - 🔥 **Optimisation dynamique du taux d'apprentissage** (scheduler Cosine Warmup)
-- 🏗️ **Architecture modulaire et extensible** pour différents horizons temporels (journaliers, horaires, minutes)
+- 🏠 **Architecture modulaire et extensible** pour différents horizons temporels (journaliers, horaires, minutes)
 - ⚡ **Compatibilité GPU** pour un entraînement rapide
 
 ---
 
 ## ⚙️ Installation
 
-### 📋 Prérequis
+### 👋 Prérequis
 
 - **Python** `>=3.8`
 - **GPU compatible CUDA** (optionnel, mais recommandé)
 - **Minimum** : 2 cœurs CPU, 2 Go RAM
 
-### 🏗️ Installation via Docker
+### 🏠 Installation via Docker
 
 Utilisez Docker pour une configuration rapide et reproductible :
 
@@ -33,7 +33,7 @@ docker-compose up -d
 
 > **Note :** Assurez-vous d'avoir installé Docker et Docker Compose sur votre machine.
 
-### 🏗️ Installation Locale
+### 🏠 Installation Locale
 
 Il est recommandé d'exécuter le projet dans un environnement virtuel.
 
@@ -108,7 +108,31 @@ python app/scheduler/scheduler.py
 
 ---
 
-## 📜 Licence
+## 🐟 Sélection du Modèle et du Mode d'Exécution
+
+Le script principal vous permet de choisir dynamiquement :
+
+- Le modèle (ex. `ConvCausalLTSM`, `LtsmAttentionforecastPred`, `VisionLiquidNet`)
+- Le type de chargeur de données (`StockDataset`, `StockGraphDataset`)
+- Le mode d'exécution (`inférence`, `évaluation`, `entraînement`)
+
+Utilisation :
+
+```bash
+python main.py --model ConvCausalLTSM --dataloader StockDataset --mode inference
+```
+
+---
+
+## 🌟 Améliorations Futures
+
+- Intégration de nouveaux modèles (Liquid Neural Networks, Transformers, etc.)
+- Tests unitaires et d'intégration
+- Mode en direct via l'API Kraken
+
+---
+
+## 📄 Licence
 
 Ce projet est sous licence **GNU**.
 
@@ -120,13 +144,7 @@ Bucamp Axle - [axle.bucamp@gmail.com](mailto:axle.bucamp@gmail.com)
 
 ---
 
-## 🚀 Projets et Améliorations Futures
-
-- Tests unitaires et d'intégration
-- Mode en direct via l'API Kraken
-
----
-
 Profitez du trading assisté par IA avec **Hygdra Forecasting** ! 🚀
 
 ---
+
