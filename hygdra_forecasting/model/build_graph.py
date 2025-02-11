@@ -154,5 +154,9 @@ class GraphTransformerforecastPred(nn.Module):
         edges = F.softmax(edges, dim=-1)  # (batch, 36, 36, 5) 
 
         nodes, edges = self.graph(node, edges)
+        
+        # TODO
+        # minimise concausal to need
+        # accept temporality dim loss ?
         x =  self.convCausal(nodes)
         return x

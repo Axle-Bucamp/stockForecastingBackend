@@ -3,7 +3,7 @@ if __name__ == '__main__':
     # Assume you already have the StockDataset and DataLoader set up as shown earlier
     from hygdra_forecasting.model.train import setup_seed, train_model
     from hygdra_forecasting.utils.learning_rate_sheduler import CosineWarmup
-    from hygdra_forecasting.model.build import ConvCausalLTSM, LtsmAttentionforecastPred
+    from hygdra_forecasting.model.build_liquid import ConvCausalLiquid
     from hygdra_forecasting.dataloader.dataloader import StockDataset
     from torch import device, cuda
     from torch.utils.data import DataLoader
@@ -32,7 +32,7 @@ if __name__ == '__main__':
     # Initialize your model
     input_sample, _ = dataset.__getitem__(0)
     setup_seed(20) # test liquid ? # check shaping and batch computation based on Dataset
-    model = ConvCausalLTSM(input_shape=input_sample.shape)
+    model = ConvCausalLiquid(input_shape=input_sample.shape)
     # LtsmAttentionforecastPred(input_shape=input_sample.shape)
     # ConvCausalLTSM(input_shape=input_sample.shape)
     model = train_model(model, dataloader, dataloader_val, epochs=100, learning_rate=0.01, lrfn=CosineWarmup(0.01, 100).lrfn)
