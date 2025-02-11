@@ -51,7 +51,7 @@ class CosineWarmup():
 
         # return ....
         lr_ramp_ep = 3 # int(0.02 * epochs)  # 30% of epochs for warm-up
-        lr_sus_ep = max(0, int(0.3 * self.epochs) - lr_ramp_ep)
+        lr_sus_ep = max(0, int(0.15 * self.epochs) - lr_ramp_ep)
         if epoch < lr_ramp_ep:  # Warm-up phase
             lr = (self.lr_max - self.lr_start) / lr_ramp_ep * epoch + self.lr_start
         elif epoch < lr_ramp_ep + lr_sus_ep:  # Sustain phase at max learning rate

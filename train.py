@@ -7,6 +7,7 @@ if __name__ == '__main__':
     from hygdra_forecasting.dataloader.dataloader import StockDataset
     from torch import device, cuda
     from torch.utils.data import DataLoader
+    import numpy as np
 
     if cuda.is_available():
         device = device('cuda:0')
@@ -29,11 +30,30 @@ if __name__ == '__main__':
     dataset_val = StockDataset(ticker=tickers_val)
     dataloader_val = DataLoader(dataset_val, batch_size=256, shuffle=True, num_workers=1)
 
+    # temp (non distinct loss and balance) seq val on known stock
+    lenval = len(dataset_val)
+    indval = len(dataset) // 2  # Select half the dataset
+
+    # Ensure index bounds are valid 
+    if indval > 0:
+        # Select random indices without replacement
+        random_indices = np.random.choice(len(dataset), indval, replace=False)
+        
+        # Move selected data to dataset_val
+        dataset_val.data = np.concatenate((dataset_val.data, dataset.data[random_indices].copy()), axis=0)
+        dataset_val.label = np.concatenate((dataset_val.label, dataset.label[random_indices].copy()), axis=0)
+
+        # Remove selected indices from dataset
+        mask = np.ones(len(dataset), dtype=bool)
+        mask[random_indices] = False
+
+        dataset.data = dataset.data[mask]
+        dataset.label = dataset.label[mask]
+
     # Initialize your model
     input_sample, _ = dataset.__getitem__(0)
     setup_seed(20) # test liquid ? # check shaping and batch computation based on Dataset
     model = ConvCausalLTSM(input_shape=input_sample.shape)
     # LtsmAttentionforecastPred(input_shape=input_sample.shape)
-    # ConvCausalLTSM(input_shape=input_sample.shape)
     model = train_model(model, dataloader, dataloader_val, epochs=100, learning_rate=0.01, lrfn=CosineWarmup(0.01, 100).lrfn)
 

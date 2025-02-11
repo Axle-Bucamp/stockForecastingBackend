@@ -7,6 +7,7 @@ if __name__ == '__main__':
     from torch.utils.data import DataLoader
     from hygdra_forecasting.utils.learning_rate_sheduler import CosineWarmup
     from torch import cuda, device, load, nn
+    import numpy as np
 
     if cuda.is_available():
         device = device('cuda:0')
@@ -29,6 +30,26 @@ if __name__ == '__main__':
     # val data
     dataset_val = StockGraphDataset(ticker=tickers_val, indics=TICKERS_ETF)
     dataloader_val = DataLoader(dataset_val, batch_size=32, shuffle=True, num_workers=1)
+
+    # temp (non distinct loss and balance) seq val on known stock
+    lenval = len(dataset_val)
+    indval = len(dataset) // 2  # Select half the dataset
+
+    # Ensure index bounds are valid 
+    if indval > 0:
+        # Select random indices without replacement
+        random_indices = np.random.choice(len(dataset), indval, replace=False)
+        
+        # Move selected data to dataset_val
+        dataset_val.data = np.concatenate((dataset_val.data, dataset.data[random_indices].copy()), axis=0)
+        dataset_val.label = np.concatenate((dataset_val.label, dataset.label[random_indices].copy()), axis=0)
+
+        # Remove selected indices from dataset
+        mask = np.ones(len(dataset), dtype=bool)
+        mask[random_indices] = False
+
+        dataset.data = dataset.data[mask]
+        dataset.label = dataset.label[mask]
 
     # Initialize your model
     input_sample, _ = dataset.__getitem__(0)
