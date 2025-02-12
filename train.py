@@ -17,19 +17,21 @@ if __name__ == '__main__':
         print('Running on the CPU')
 
     # work on model ? redo double chanel one conv causal the other as validator
-    """
+    
+    # yfinance daily
     # liquid net / graph like llm
     tickers= ["DEFI", "PANW", "MRVL", "NKLA", "AFRM", "EBIT.TO", "^FCHI", "NKE", "^GSPC", "^IXIC", "BILL", "EXPE", 'LINK-USD', "TTWO", "NET", 'ICP-USD', 'FET-USD', 'FIL-USD', 'THETA-USD','AVAX-USD', 'HBAR-USD', 'UNI-USD', 'STX-USD', 'OM-USD', 'FTM-USD', "INJ-USD", "INTC", "SQ", "XOM", "COST", "BP", "BAC", "JPM", "GS", "CVX", "BA", "PFE", "PYPL", "SBUX", "DIS", "NFLX", 'GOOG', "NVDA", "JNJ", "META", "GOOGL", "AAPL", "MSFT", "BTC-EUR", "CRO-EUR", "ETH-USD", "CRO-USD", "BTC-USD", "BNB-USD", "XRP-USD", "ADA-USD", "SOL-USD"]
     tickers_val = ["AMZN", "AMD", "ETH-EUR", "ELF", "UBER"]
     TICKERS_ETF = ["^GSPC", "^FCHI", "^IXIC","EBIT.TO", "BTC-USD"]
-    """
+    
 
     # live mode
-    tickers= [ "CRO-EUR", "ETH-USD", "CRO-USD", "BTC-USD", "XRP-USD", "ADA-USD", "SOL-USD"]
-    tickers_val = ['LINK-USD', 'ICP-USD', 'FET-USD', 'FIL-USD', "ETH-EUR"]
+    # only crypto kraken api
+    #tickers= [ "CRO-EUR", "ETH-USD", "CRO-USD", "BTC-USD", "XRP-USD", "ADA-USD", "SOL-USD",  "PEPE-USD", "POPCAT-USD", "DOGE-USD", "TRUMP-USD", "SUI-USD"]
+    #tickers_val = ['LINK-USD', 'ICP-USD', 'FET-USD', 'FIL-USD', "ETH-EUR"]
 
     # tran data
-    dataset = StockDataset(ticker=tickers, interval='1')
+    dataset = StockDataset(ticker=tickers) #, interval='1'
     dataloader = DataLoader(dataset, batch_size=256, shuffle=True, num_workers=1)
 
     # val data
@@ -38,7 +40,7 @@ if __name__ == '__main__':
 
     # temp (non distinct loss and balance) seq val on known stock
     lenval = len(dataset_val)
-    indval = int(len(dataset) / 1.3)  # Select half the dataset
+    indval = int(len(dataset) / 1.2)  # Select half the dataset
 
     # Ensure index bounds are valid 
     if indval > 0:
@@ -67,5 +69,5 @@ if __name__ == '__main__':
     model = ConvCausalLTSM(input_shape=input_sample.shape)
     del input_sample
     # LtsmAttentionforecastPred, ConvCausalLTSM
-    model = train_model(model, dataloader, dataloader_val, epochs=100, learning_rate=0.01, lrfn=CosineWarmup(0.01, 100).lrfn, checkpoint_file=load("weight/standard/ConvCausalLTSM/80_weight.pth"))
+    model = train_model(model, dataloader, dataloader_val, epochs=100, learning_rate=0.01, lrfn=CosineWarmup(0.01, 100).lrfn, checkpoint_file=load("weight/best_model.pth"))
 
