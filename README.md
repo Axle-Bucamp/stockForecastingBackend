@@ -126,14 +126,10 @@ python main.py --model ConvCausalLTSM --dataloader StockDataset --mode inference
 
 ## 🌟 Améliorations Futures
 
-- Intégration de nouveaux modèles (Liquid Neural Networks, Transformers, etc.)
 - Tests unitaires et d'intégration
 - Mode en direct via l'API Kraken
-- graph for inference
-- graph as recom system to target better stock
-- train on all stock or select understandable stock (good to train on)
-- inference capable of graph and model selection instead of only convcausal
-- Seccond step validation using data from known stock (make a val balanced score generalisation vs acc)
+- Graph as recom system to target better stock
+- Train on all stock or select understandable stock
 
 ---
 
@@ -152,4 +148,3 @@ Bucamp Axle - [axle.bucamp@gmail.com](mailto:axle.bucamp@gmail.com)
 Profitez du trading assisté par IA avec **Hygdra Forecasting** ! 🚀
 
 ---
-

@@ -17,13 +17,19 @@ if __name__ == '__main__':
         print('Running on the CPU')
 
     # work on model ? redo double chanel one conv causal the other as validator
+    """
     # liquid net / graph like llm
     tickers= ["DEFI", "PANW", "MRVL", "NKLA", "AFRM", "EBIT.TO", "^FCHI", "NKE", "^GSPC", "^IXIC", "BILL", "EXPE", 'LINK-USD', "TTWO", "NET", 'ICP-USD', 'FET-USD', 'FIL-USD', 'THETA-USD','AVAX-USD', 'HBAR-USD', 'UNI-USD', 'STX-USD', 'OM-USD', 'FTM-USD', "INJ-USD", "INTC", "SQ", "XOM", "COST", "BP", "BAC", "JPM", "GS", "CVX", "BA", "PFE", "PYPL", "SBUX", "DIS", "NFLX", 'GOOG', "NVDA", "JNJ", "META", "GOOGL", "AAPL", "MSFT", "BTC-EUR", "CRO-EUR", "ETH-USD", "CRO-USD", "BTC-USD", "BNB-USD", "XRP-USD", "ADA-USD", "SOL-USD"]
     tickers_val = ["AMZN", "AMD", "ETH-EUR", "ELF", "UBER"]
     TICKERS_ETF = ["^GSPC", "^FCHI", "^IXIC","EBIT.TO", "BTC-USD"]
+    """
+
+    # live mode
+    tickers= [ "CRO-EUR", "ETH-USD", "CRO-USD", "BTC-USD", "XRP-USD", "ADA-USD", "SOL-USD"]
+    tickers_val = ['LINK-USD', 'ICP-USD', 'FET-USD', 'FIL-USD', "ETH-EUR"]
 
     # tran data
-    dataset = StockDataset(ticker=tickers)
+    dataset = StockDataset(ticker=tickers, interval='1')
     dataloader = DataLoader(dataset, batch_size=256, shuffle=True, num_workers=1)
 
     # val data

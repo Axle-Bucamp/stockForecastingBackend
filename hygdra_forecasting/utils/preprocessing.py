@@ -1,12 +1,37 @@
 import numpy as np
 import yfinance as yf
 import pandas as pd
-
+import requests
+import json
 
 SEQUENCE_LEN = 36
 TIME_DELTA_LABEL = 12
 TICKERS = ["AMD", "INTC", "SQ", "BA", "PFE", "PYPL", "COST", "SBUX", "DIS", "NFLX", 'GOOG', "NVDA", "JNJ", "META", "BRK-B", "GOOGL", "AAPL", "MSFT", "AMZN", "BTC-EUR", "ETH-EUR", "CRO-EUR", "AMZN", "BTC-USD", "ETH-USD", "CRO-USD", "INJ-USD", "BTC-USD", "ETH-USD", "BNB-USD", "XRP-USD", "ADA-USD", "SOL-USD", "DOGE-USD", "DOT-USD", "MATIC-USD"]
 TICKERS_ETF = ["^GSPC", "^FCHI", "^IXIC","EBIT.TO", "BTC-USD"]
+
+def get_kraken_data(ticker:str, interval:str) -> pd.DataFrame:
+    pair = ticker.split("-")[0] + "USD"
+    url = f"https://api.kraken.com/0/public/OHLC?pair={pair}&interval={interval}"
+
+    payload = {}
+    headers = {
+    'Accept': 'application/json'
+    }
+
+    response = requests.request("GET", url, headers=headers, data=payload)
+
+    data = json.loads(response.text)
+    # [int <time>, string <open>, string <high>, string <low>, string <close>, string <vwap>, string <volume>, int <count>]
+    keys = list(data["result"].keys())
+    data = pd.DataFrame(data["result"][keys[0]], columns=["Date", "Open", "High", "Low", "Close", "vwap", "Volume", "count"])
+    data["Close"] = pd.to_numeric(data["Close"])
+    data["High"] = pd.to_numeric(data["High"])
+    data["Low"] = pd.to_numeric(data["Low"])
+    data["Open"] = pd.to_numeric(data["Open"])
+    data["Volume"] = pd.to_numeric(data["Volume"])
+    data.drop(["count", "vwap"], axis=1, inplace=True)
+    data.index = data["Date"]
+    return data 
 
 def calculate_bollinger_bands(data:pd.DataFrame, window:int=10, num_of_std:int=2) -> tuple[pd.Series, pd.Series]:
     """
@@ -132,10 +157,17 @@ def ohlv_to_dataframe(tickers:list[str], period:str="2y", interval:str='1d'):
     Returns:
         Tuple[pd.DataFrame, dict] : donnees d analyse, indice de denormalisation
     """
+    kraken = False
+    if interval in ["1", "5", "15", "30", "60", "240", "1440", "10080", "21600"]:
+        kraken = True
+
     ticker_data_frames = []
     for ticker in tickers:
         # Download historical data for the ticker
-        data = yf.download(ticker, period=period, interval=interval) # checker pour faire un model jour heur minute
+        if kraken :
+            data = get_kraken_data(ticker, interval)
+        else :
+            data = yf.download(ticker, period=period, interval=interval) # checker pour faire un model jour heur minute
 
         # Calculate the daily percentage change
         close = data['Close']
