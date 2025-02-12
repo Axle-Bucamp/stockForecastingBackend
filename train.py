@@ -5,7 +5,7 @@ if __name__ == '__main__':
     from hygdra_forecasting.utils.learning_rate_sheduler import CosineWarmup
     from hygdra_forecasting.model.build import ConvCausalLTSM, LtsmAttentionforecastPred
     from hygdra_forecasting.dataloader.dataloader import StockDataset
-    from torch import device, cuda
+    from torch import device, cuda, load
     from torch.utils.data import DataLoader
     import numpy as np
 
@@ -61,5 +61,5 @@ if __name__ == '__main__':
     model = ConvCausalLTSM(input_shape=input_sample.shape)
     del input_sample
     # LtsmAttentionforecastPred, ConvCausalLTSM
-    model = train_model(model, dataloader, dataloader_val, epochs=100, learning_rate=0.01, lrfn=CosineWarmup(0.01, 100).lrfn)
+    model = train_model(model, dataloader, dataloader_val, epochs=100, learning_rate=0.01, lrfn=CosineWarmup(0.01, 100).lrfn, checkpoint_file=load("weight/standard/ConvCausalLTSM/80_weight.pth"))
 
