@@ -7,40 +7,53 @@ from torch import cuda, device
 from hygdra_forecasting.dataloader.dataloader import StockDataset
 from hygdra_forecasting.utils.learning_rate_sheduler import CosineWarmup
 from hygdra_forecasting.model.train import train_model, setup_seed
-from hygdra_forecasting.model.eval import validate
 import torch.nn as nn
 
-if cuda.is_available():
-        device = device('cuda:0')
-        print('Running on the GPU')
-else:
-    device = device('cpu')
-    print('Running on the CPU')
-
-# lineare sheduler
-def tuning_sheduler(epoch:int):
-    return 0.03 / (epoch + 1)
-
-# for one group
-def finetune_one(tickers:List[str], path:str):
-    dataset = StockDataset(ticker=tickers)
-    dataloader = DataLoader(dataset, batch_size=256, shuffle=True, num_workers=1)
-
-    input_sample, _ = dataset.__getitem__(0)
-    model = ConvCausalLTSM(input_shape=input_sample.shape)
-    model = train_model(model, dataloader, epochs=10, learning_rate=0.01, save_epoch=False, lrfn=CosineWarmup(0.01, 10).lrfn, checkpoint_file=load('weight/best_model.pth'))
-    save(model.state_dict(), path)
+class StockFineTuner:
+    def __init__(self, interval: str = 'days', base_weight: str = 'weight/days/best_model.pth', epoch=10, learnig_rate=0.005):
+        self.interval = interval
+        self.base_weight = base_weight
+        self.device = device('cuda:0') if cuda.is_available() else device('cpu')
+        self.learning_rate = learnig_rate
+        self.epoch = epoch
+        self.interval_transform = {"days" : '1440', "minutes" : '1', "hours" : '60', "thrity" : "30"}
+        setup_seed(20)
     
-# for all groups
-def finetune_many():
-    setup_seed(20)
-    # default
-    seq = 'days'
-    for group in TKGroup.__members__.values():
-        group_name, tickers = group.value
-        print(tickers)
-        finetune_one(tickers, f'weight/{seq}/{group_name}.pth')
+    def tuning_scheduler(self, epoch: int) -> float:
+        self.learning_rate = self.learning_rate / (epoch + 1)
+        return self.learning_rate
     
-if __name__ == "__main__" :
-    finetune_many()
+    def finetune_one(self, tickers: List[str], path: str):
+        dataset = StockDataset(ticker=tickers, interval=self.interval_transform[self.interval])
+        dataloader = DataLoader(dataset, batch_size=256, shuffle=True, num_workers=1)
+        
+        input_sample, _ = dataset.__getitem__(0)
+        model = ConvCausalLTSM(input_shape=input_sample.shape)
+        
+        model = train_model(
+            model,
+            dataloader,
+            epochs=self.epoch,
+            learning_rate=self.learning_rate,
+            save_epoch=False,
+            lrfn=CosineWarmup(self.learning_rate, self.epoch).lrfn,
+            criterion=nn.L1Loss(),
+            checkpoint_file=load(self.base_weight)
+        )
+
+        save(model.state_dict(), path)
     
+    def finetune_many(self):
+        for group in TKGroup.__members__.values():
+            group_name, tickers = group.value
+            print(f'Fine-tuning for {group_name}: {tickers}')
+            self.finetune_one(tickers, f'weight/{self.interval}/{group_name}.pth')
+
+if __name__ == "__main__":
+    # {"days" : '1d', "minutes" : '1', "hours" : '60', "thrity" : "30"}
+    interval = "minutes"
+    tuner = StockFineTuner(interval=interval, base_weight=f'weight/{interval}/best_model.pth')
+    tuner.finetune_many()
+    # training is still realy weirdly reset while not in training phase
+    # manage non crypto course via kraken
+    # remove non crypto from inference 

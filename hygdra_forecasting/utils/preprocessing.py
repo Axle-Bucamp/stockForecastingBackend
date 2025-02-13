@@ -31,6 +31,7 @@ def get_kraken_data(ticker:str, interval:str) -> pd.DataFrame:
     data["Volume"] = pd.to_numeric(data["Volume"])
     data.drop(["count", "vwap"], axis=1, inplace=True)
     data.index = data["Date"]
+    print("======>", ticker)
     return data 
 
 def calculate_bollinger_bands(data:pd.DataFrame, window:int=10, num_of_std:int=2) -> tuple[pd.Series, pd.Series]:
@@ -163,43 +164,54 @@ def ohlv_to_dataframe(tickers:list[str], period:str="2y", interval:str='1d'):
 
     ticker_data_frames = []
     for ticker in tickers:
-        # Download historical data for the ticker
-        if kraken :
-            data = get_kraken_data(ticker, interval)
-        else :
-            data = yf.download(ticker, period=period, interval=interval) # checker pour faire un model jour heur minute
+        try : 
+            # Download historical data for the ticker
+            if kraken :
+                data = get_kraken_data(ticker, interval)
+            else :
+                data = yf.download(ticker, period=period, interval=interval) # checker pour faire un model jour heur minute
 
-        # Calculate the daily percentage change
-        close = data['Close']
-        upper, lower = calculate_bollinger_bands(close, window=14, num_of_std=2)
-        width = upper - lower
-        rsi = calculate_rsi(close, window=14)
-        roc = calculate_roc(close, periods=14)
-        volume = data['Volume']
-        diff = data['Close'].diff(1)
-        percent_change_close = data['Close'].pct_change() * 100
+            # Calculate the daily percentage change
+            close = data['Close']
+            upper, lower = calculate_bollinger_bands(close, window=14, num_of_std=2)
+            width = upper - lower
+            rsi = calculate_rsi(close, window=14)
+            roc = calculate_roc(close, periods=14)
+            volume = data['Volume']
+            diff = data['Close'].diff(1)
+            percent_change_close = data['Close'].pct_change() * 100
 
-        # Create a DataFrame for the current ticker and append it to the list
-        ticker_df = pd.DataFrame({
-            ticker+'_close': close.squeeze(),
-            ticker+'_width': width.squeeze(),
-            ticker+'_rsi': rsi.squeeze(),
-            ticker+'_roc': roc.squeeze(),
-            ticker+'_volume': volume.squeeze(),
-            ticker+'_diff': diff.squeeze(),
-            ticker+'_percent_change_close': percent_change_close.squeeze(),
-        }, index=close.index)
+            # Create a DataFrame for the current ticker and append it to the list
+            ticker_df = pd.DataFrame({
+                ticker+'_close': close.squeeze(),
+                ticker+'_width': width.squeeze(),
+                ticker+'_rsi': rsi.squeeze(),
+                ticker+'_roc': roc.squeeze(),
+                ticker+'_volume': volume.squeeze(),
+                ticker+'_diff': diff.squeeze(),
+                ticker+'_percent_change_close': percent_change_close.squeeze(),
+            }, index=close.index)
 
-        MEAN = ticker_df.mean()
-        STD = ticker_df.std()
+            # ticker_df.replace([np.inf, -np.inf], np.nan, inplace=True)
+            # ticker_df.dropna(inplace=True)
 
-        # Normalize the training features
-        ticker_df = (ticker_df - MEAN) / STD
-        ticker_data_frames.append(ticker_df)
+            MEAN = ticker_df.mean()
+            STD = ticker_df.std()
+            ticker_df = (ticker_df - MEAN) / STD
+
+            ticker_df.replace([np.inf, -np.inf], np.nan, inplace=True)
+            if ticker_df.shape[0] - np.max(ticker_df.isna().sum()) > 300:
+                # Normalize the training features
+                ticker_data_frames.append(ticker_df)
+        except :
+            print("error at ", ticker)
+            continue
 
     df = pd.concat(ticker_data_frames, axis=1)
+    # to many stock leads to nan
     df.replace([np.inf, -np.inf], np.nan, inplace=True)
     df.dropna(inplace=True)
+    print("total shape", df.shape)
 
     # Shift the dataframe up by one to align current features with the next step's outcomes
     labels = df.shift(-1) # nb days shift, check to return a full sequence to predict N
@@ -309,46 +321,52 @@ def dataframe_to_dataset(df:pd.DataFrame, labels:pd.DataFrame, tickers:list[str]
     """
     sequences_dict = {}
     sequence_labels = {}
+    print("input shape", df.shape)
     for ticker in tickers:
+        try : 
+            # Extract close and volume data for the ticker
+            close = df[ticker+'_close'].values
+            width = df[ticker+'_width'].values
+            rsi = df[ticker+'_rsi'].values
+            roc = df[ticker+'_roc'].values
+            volume = df[ticker+'_volume'].values
+            diff = df[ticker+'_diff'].values
+            pct_change = df[ticker+'_percent_change_close'].values
 
-        # Extract close and volume data for the ticker
-        close = df[ticker+'_close'].values
-        width = df[ticker+'_width'].values
-        rsi = df[ticker+'_rsi'].values
-        roc = df[ticker+'_roc'].values
-        volume = df[ticker+'_volume'].values
-        diff = df[ticker+'_diff'].values
-        pct_change = df[ticker+'_percent_change_close'].values
+            # Combine close and volume data
+            ticker_data = np.column_stack((close,
+                                        width,
+                                        rsi,
+                                        roc,
+                                        volume,
+                                        diff,
+                                        pct_change))
 
-        # Combine close and volume data
-        ticker_data = np.column_stack((close,
-                                    width,
-                                    rsi,
-                                    roc,
-                                    volume,
-                                    diff,
-                                    pct_change))
-
-        # Generate sequences
-        attribute = ticker+"_close"
-        ticker_sequences, lab = create_sequences(ticker_data,
-                                                labels[attribute].values[SEQUENCE_LEN-1:])
-
-        sequences_dict[ticker] = ticker_sequences
-        sequence_labels[ticker] = lab
+            # Generate sequences
+            attribute = ticker+"_close"
+            ticker_sequences, lab = create_sequences(ticker_data,
+                                                    labels[attribute].values[SEQUENCE_LEN-1:])
+            sequences_dict[ticker] = ticker_sequences
+            sequence_labels[ticker] = lab
+            
+        except  :
+            print("error at ", ticker)
+            continue
     
     # Combine data and labels from all tickers
     all_sequences = []
     all_labels = []
 
-    for ticker in tickers:
-        all_sequences.extend(sequences_dict[ticker])
-        all_labels.extend(sequence_labels[ticker])
+    for ticker in sequences_dict.keys():
+        if sequences_dict[ticker].shape[0] > 0 :
+            print('loaded, shape', ticker, sequences_dict[ticker].shape)
+            all_sequences.extend(sequences_dict[ticker])
+            all_labels.extend(sequence_labels[ticker])
 
     # Convert to numpy arrays
     all_sequences = np.array(all_sequences)
     all_labels = np.array(all_labels)
-
+    print("training shape ", all_sequences.shape)
     # split in another func ?
     return all_sequences, all_labels
 

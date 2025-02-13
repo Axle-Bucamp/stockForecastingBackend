@@ -3,18 +3,30 @@ import schedule
 import finetune
 import inference
 
-# save model, send api call reload model ? (future external server)
-scheduler1 = schedule.Scheduler()
-scheduler1.every(1).days.do(finetune.finetune_many)
+# Scheduler setup
+scheduler = schedule.Scheduler()
+intervals = ['minutes', 'thirty', 'hour', 'days']
 
-# scheduler predict to csv and overight
-# api open and return csv
-scheduler2 = schedule.Scheduler()
-scheduler2.every(1).days.do(inference.predict_daily)
+def run_scheduled_tasks(interval):
+    tuner = finetune.StockFineTuner(interval=interval, base_weight=f"weight/{interval}/best_model.pth")
+    predictor = inference.StockPredictor(interval=interval)
+    
+    print(f"Starting fine-tuning for interval: {interval}")
+    tuner.finetune_many()
+    print(f"Completed fine-tuning for interval: {interval}")
+    
+    print(f"Starting prediction for interval: {interval}")
+    predictor.predict()
+    print(f"Completed prediction for interval: {interval}")
+    
+    time.sleep(1)  # Ensure resource cleanup
 
-if __name__ == "__main__" :
+scheduler.every(1).minutes.do(run_scheduled_tasks, interval='minutes')
+scheduler.every(30).minutes.do(run_scheduled_tasks, interval='thirty')
+scheduler.every(1).hours.do(run_scheduled_tasks, interval='hour')
+scheduler.every(1).days.do(run_scheduled_tasks, interval='days')
+
+if __name__ == "__main__":
     while True:
-        scheduler1.run_pending()
-        time.sleep(1)
-        scheduler2.run_pending()
-        time.sleep(1)
+        scheduler.run_pending()
+        time.sleep(1)# Scheduler setup

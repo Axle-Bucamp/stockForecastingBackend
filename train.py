@@ -7,7 +7,10 @@ if __name__ == '__main__':
     from hygdra_forecasting.dataloader.dataloader import StockDataset
     from torch import device, cuda, load
     from torch.utils.data import DataLoader
+    import json
     import numpy as np
+    import random
+
 
     if cuda.is_available():
         device = device('cuda:0')
@@ -19,28 +22,53 @@ if __name__ == '__main__':
     # work on model ? redo double chanel one conv causal the other as validator
     
     # yfinance daily
+    """
     # liquid net / graph like llm
     tickers= ["DEFI", "PANW", "MRVL", "NKLA", "AFRM", "EBIT.TO", "^FCHI", "NKE", "^GSPC", "^IXIC", "BILL", "EXPE", 'LINK-USD', "TTWO", "NET", 'ICP-USD', 'FET-USD', 'FIL-USD', 'THETA-USD','AVAX-USD', 'HBAR-USD', 'UNI-USD', 'STX-USD', 'OM-USD', 'FTM-USD', "INJ-USD", "INTC", "SQ", "XOM", "COST", "BP", "BAC", "JPM", "GS", "CVX", "BA", "PFE", "PYPL", "SBUX", "DIS", "NFLX", 'GOOG', "NVDA", "JNJ", "META", "GOOGL", "AAPL", "MSFT", "BTC-EUR", "CRO-EUR", "ETH-USD", "CRO-USD", "BTC-USD", "BNB-USD", "XRP-USD", "ADA-USD", "SOL-USD"]
     tickers_val = ["AMZN", "AMD", "ETH-EUR", "ELF", "UBER"]
     TICKERS_ETF = ["^GSPC", "^FCHI", "^IXIC","EBIT.TO", "BTC-USD"]
+    """
     
-
+    """
     # live mode
     # only crypto kraken api
-    #tickers= [ "CRO-EUR", "ETH-USD", "CRO-USD", "BTC-USD", "XRP-USD", "ADA-USD", "SOL-USD",  "PEPE-USD", "POPCAT-USD", "DOGE-USD", "TRUMP-USD", "SUI-USD"]
-    #tickers_val = ['LINK-USD', 'ICP-USD', 'FET-USD', 'FIL-USD', "ETH-EUR"]
+    tickers= [ "CRO-EUR", 'SAND', 'IMX', "GALA", "AXS", "MANA", "AAVE", "ETH-USD", "CRO-USD", "BTC-USD", "XRP-USD", "ADA-USD", "SOL-USD",  "PEPE-USD", "POPCAT-USD", "DOGE-USD", "TRUMP-USD", "SUI-USD"]
+    tickers_val = ['LINK-USD', 'ICP-USD', 'FET-USD', 'FIL-USD', "ETH-EUR"]
+    """
+    
+    # to much stoc loaded lead to the exclusion of 
+    # almost every index cause low probability 
+    # of getting every stock at max
+    # Load enabled assets from JSON
+    with open("enabled_assets.json", "r") as file:
+        enabled_assets = json.load(file)
 
+    # Shuffle the list to ensure randomness
+    random.shuffle(enabled_assets)
+
+    #enabled_assets = enabled_assets # limit
+    # Define split ratio (e.g., 80% train, 20% validation)
+    split_ratio = 0.9
+    split_index = int(len(enabled_assets) * split_ratio)
+
+    # Split into training and validation sets
+    tickers = enabled_assets[:split_index]
+    tickers_val = enabled_assets[split_index:]
+    
     # tran data
-    dataset = StockDataset(ticker=tickers) #, interval='1'
+    # interval standard : ["1", "5", "15", "30", "60", "240", "1440", "10080", "21600"]
+    # add for loop ? => fine tune on one interval + fine tune 1 epoch on focused one
+    interval = "60" 
+    dataset = StockDataset(ticker=tickers, interval=interval) #, interval='1'
     dataloader = DataLoader(dataset, batch_size=256, shuffle=True, num_workers=1)
 
     # val data
-    dataset_val = StockDataset(ticker=tickers_val)
+    dataset_val = StockDataset(ticker=tickers_val, interval=interval)
     dataloader_val = DataLoader(dataset_val, batch_size=256, shuffle=True, num_workers=1)
 
     # temp (non distinct loss and balance) seq val on known stock
     lenval = len(dataset_val)
-    indval = int(len(dataset) / 1.2)  # Select half the dataset
+    indval = int(len(dataset) / 1.1)  # Select half the dataset
 
     # Ensure index bounds are valid 
     if indval > 0:

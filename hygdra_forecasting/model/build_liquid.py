@@ -1,6 +1,5 @@
 import torch
 from liquidnet.main import LiquidNet
-from liquidnet.vision_liquidnet import VisionLiquidNet
 import torch.nn as nn
 
 
