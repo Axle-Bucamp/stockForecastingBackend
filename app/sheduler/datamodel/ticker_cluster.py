@@ -3,7 +3,6 @@ from enum import Enum
 # trier
 # --- use later ---
 """
-class TKGroup(Enum):
     crypto10 = ("crypto-standard", ["ADA-USD", "SOL-USD", 'XRP-USD', "ETH-USD", "BTC-USD", 'TON-USD'])
     freedom = ("thisiselonmusk", ["XRP-USD", "SHIB-USD", 'DOGE-USD', 'SOL-USD', 'BTC-USD'])
     cac40 = ("cac40", ["AMD", "INTC", 'GOOG', "NVDA", "META", "GOOGL", "AAPL", "MSFT"])
@@ -17,12 +16,12 @@ class TKGroup(Enum):
 """
 
 class TKGroup(Enum):
-    CRYPTO_STANDARD = ("crypto-standard", ["ADA-USD", "SOL-USD", "XRP-USD", "ETH-USD", "BTC-USD", "TON-USD"])
+    CRYPTO_STANDARD = ("crypto-standard", ["ADA-USD", "SOL-USD", "XRP-USD", "ETH-USD", "BTC-USD"])
     FREEDOM = ("thisiselonmusk", ["XRP-USD", "SHIB-USD", "SOL-USD", "BTC-USD"])
-    WEB3 = ("web3", ["LINK-USD", "SUI-USD", "CRO-EUR", "SOL"])
+    WEB3 = ("web3", ["LINK-USD", "SOL"])
     GAME = ('gaming', ['SAND', 'IMX', "GALA", "AXS", "MANA"])
     DEFI = ("defi", ['AVAX-USD', 'LINK-USD', 'UNI-USD', 'STX-USD', 'FTM-USD', "INJ-USD"])
-    MEMECOIN = ("memecoin", ["BONK-USD", "SHIB-USD", "PEPE-USD", "FARTCOIN"])
+    MEMECOIN = ("memecoin", [ "SHIB-USD"])
 
 # --- use later ---
 class TKGroupName(str, Enum):

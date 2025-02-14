@@ -10,7 +10,7 @@ from hygdra_forecasting.model.train import train_model, setup_seed
 import torch.nn as nn
 
 class StockFineTuner:
-    def __init__(self, interval: str = 'days', base_weight: str = 'weight/days/best_model.pth', epoch=10, learnig_rate=0.005):
+    def __init__(self, interval: str = 'days', base_weight: str = 'weight/days/best_model.pth', epoch=5, learnig_rate=0.01):
         self.interval = interval
         self.base_weight = base_weight
         self.device = device('cuda:0') if cuda.is_available() else device('cpu')
@@ -36,7 +36,7 @@ class StockFineTuner:
             epochs=self.epoch,
             learning_rate=self.learning_rate,
             save_epoch=False,
-            lrfn=CosineWarmup(self.learning_rate, self.epoch).lrfn,
+            lrfn=self.tuning_scheduler,
             criterion=nn.L1Loss(),
             checkpoint_file=load(self.base_weight)
         )
@@ -50,9 +50,9 @@ class StockFineTuner:
             self.finetune_one(tickers, f'weight/{self.interval}/{group_name}.pth')
 
 if __name__ == "__main__":
-    # {"days" : '1d', "minutes" : '1', "hours" : '60', "thrity" : "30"}
+    # {"days" : '1440', "minutes" : '1', "hours" : '60', "thrity" : "30"}
     interval = "minutes"
-    tuner = StockFineTuner(interval=interval, base_weight=f'weight/{interval}/best_model.pth')
+    tuner = StockFineTuner(interval=interval, base_weight=f'../../weight/best_model.pth')
     tuner.finetune_many()
     # training is still realy weirdly reset while not in training phase
     # manage non crypto course via kraken

@@ -17,15 +17,17 @@ class StockPredictor:
         self.device = device('cuda:0') if cuda.is_available() else device('cpu')
         print(f'Running on the {self.device}')
         self.model = ConvCausalLTSM((36, 7))
+        self.interval_transform = {"days" : '1440', "minutes" : '1', "hours" : '60', "thrity" : "30"}
+
     
     def predict(self):
         for group in TKGroup.__members__.values():
             groups_name, tickers = group.value
 
-            self.model.load_state_dict(load(f'weight/{self.interval}/{groups_name}.pth'))
+            self.model.load_state_dict(load(f'weight/{self.interval}/best_model.pth')["model_state_dict"]) # {groups_name}.pth
             self.model.eval()
             
-            df, dict_unorm = ohlv_to_dataframe_inference(tickers)
+            df, dict_unorm = ohlv_to_dataframe_inference(tickers, interval=self.interval_transform[self.interval])
             sequences_dict = dataframe_to_dataset_inference(df, tickers)
             
             df_result = DataFrame()
