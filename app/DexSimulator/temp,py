@@ -1,0 +1,106 @@
+import time
+from oneinch_py import OneInchSwap, TransactionHelper, OneInchOracle
+import configparser
+
+# see transaction in real time 
+# https://etherscan.io/address/0xe80a3286d785fcaaae0302018b3f59a6e2872b88
+
+# see rpc enpoint for smart chain and contract
+# https://rpc.info/
+
+# graph query for smart contract 
+# https://thegraph.com
+
+# complementary tool
+# waffle 
+# truffle 
+# hardhat
+# solidity 
+
+config = configparser.ConfigParser()
+config.read('.key')
+
+# Set up configuration (use environmental variables for private key and RPC URLs in real applications)
+rpc_url = "https://bsc-pokt.nodies.app"
+binance_rpc = "https://binance.llamarpc.com"
+# json list extracted from rpc endpoint ?
+
+public_key = config["ETHEREUM"]["PUBLIC_KEY"]
+private_key = config["ETHEREUM"]["PRIVATE_KEY"]
+api_key = config["ONEINCH"]["API_key"]
+# 1 Inch API key
+
+# Initialize objects for Ethereum and Binance chain
+exchange = OneInchSwap(api_key, public_key)
+bsc_exchange = OneInchSwap(api_key, public_key)
+helper = TransactionHelper(api_key, rpc_url, public_key, private_key)
+bsc_helper = TransactionHelper(api_key, binance_rpc, public_key, private_key, chain='binance')
+oracle = OneInchOracle(rpc_url, chain='ethereum')
+
+def test_get_swap_rate(from_token, to_token, amount, slippage=0.5):
+    """ Simulates getting the swap rate for a trade """
+    print("Fetching swap rate...")
+    global exchange
+    result = exchange.get_swap(from_token, to_token, amount, slippage)
+    print(f"Swap details: {result}")
+    return result
+
+def test_get_gas_fee(ticker:str):
+    """ Simulates getting the gas fee for a transaction """
+    print("Fetching gas fee...")
+    # exchange.get_swap(from_token_symbol='ETH', to_token_symbol='USDT', amount=1, slippage=0.5)
+    global exchange
+    tx = exchange.get_swap(from_token_symbol=ticker, to_token_symbol='USDT', amount=1, slippage=0.5)
+
+    print(f"Calculated gas fee: {fee} ETH")
+    return tx
+
+def test_build_and_sign_tx(swap_data):
+    """ Simulates building and signing a transaction """
+    print("Building transaction...")
+    global helper
+    built_tx = helper.build_tx(swap_data)
+    print(f"Built transaction: {built_tx}")
+    
+    print("Signing transaction...")
+    signed_tx = helper.sign_tx(built_tx)
+    print(f"Signed transaction: {signed_tx}")
+    
+    return signed_tx
+
+def test_broadcast_tx(signed_tx):
+    """ Simulates broadcasting the transaction to the network """
+    print("Broadcasting transaction...")
+    global helper
+    broadcast_result = helper.broadcast_tx(signed_tx)
+    print(f"Broadcast result: {broadcast_result}")
+    return broadcast_result
+
+def main():
+    # Set tokens and amount for the test
+    from_token = "USDT"
+    to_token = "ETH"
+    amount = 10  # Amount in token's base unit (e.g., 10 USDT)
+
+    # Step 1: Fetch swap rate
+    swap_data = test_get_swap_rate(from_token, to_token, amount)
+
+    # Step 2: Get gas fee for the transaction
+    gas_fee = test_get_gas_fee(swap_data["tx"]["data"])
+
+    # Step 3: Build and sign the transaction
+    signed_tx = test_build_and_sign_tx(swap_data)
+
+    # Step 4: Broadcast the transaction and monitor receipt
+    result = test_broadcast_tx(signed_tx)
+
+    # Wait for a few seconds to simulate transaction receipt monitoring
+    time.sleep(10)  # Wait for transaction to be mined
+    print("Transaction broadcasted and processed.")
+
+    # Optionally check transaction status here (e.g., by using the transaction hash)
+    # receipt = helper.check_receipt(result['tx']['hash'])  # Uncomment and implement check_receipt
+    # print(f"Transaction receipt: {receipt}")
+
+if __name__ == '__main__':
+    main()
