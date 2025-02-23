@@ -28,9 +28,9 @@ def load_tickers():
         return []
 
 # --- Function to Load Stock Data ---
-def load_stock_data(ticker):
+def load_stock_data(ticker, seq="days"):
     try:
-        resp = requests.get(f"{API_BASE_URL}/api/json/stock/{ticker}")
+        resp = requests.get(f"{API_BASE_URL}/api/json/stock/{seq}/{ticker}")
         if resp.status_code == 200:
             data = StringIO(resp.json())
             return pd.read_json(data, orient="records")

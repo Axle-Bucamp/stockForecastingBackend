@@ -29,8 +29,8 @@ def get_kraken_data(ticker:str, interval:str) -> pd.DataFrame:
     data["Low"] = pd.to_numeric(data["Low"])
     data["Open"] = pd.to_numeric(data["Open"])
     data["Volume"] = pd.to_numeric(data["Volume"])
-    data.drop(["count", "vwap"], axis=1, inplace=True)
-    data.index = data["Date"]
+    data.index = pd.to_datetime(data["Date"], unit='s').round('T')
+    data.drop(["count", "vwap", "Date"], axis=1, inplace=True)
     print("======>", ticker)
     return data 
 
@@ -192,15 +192,14 @@ def ohlv_to_dataframe(tickers:list[str], period:str="2y", interval:str='1d'):
                 ticker+'_percent_change_close': percent_change_close.squeeze(),
             }, index=close.index)
 
-            # ticker_df.replace([np.inf, -np.inf], np.nan, inplace=True)
-            # ticker_df.dropna(inplace=True)
-
             MEAN = ticker_df.mean()
             STD = ticker_df.std()
+            STD.replace(0, 1, inplace=True)
             ticker_df = (ticker_df - MEAN) / STD
 
-            ticker_df.replace([np.inf, -np.inf], np.nan, inplace=True)
-            if ticker_df.shape[0] - np.max(ticker_df.isna().sum()) > 300:
+            ticker_df.replace([np.inf, -np.inf], 0, inplace=True)
+            ticker_df.dropna(inplace=True)
+            if ticker_df.shape[0] > 700: 
                 # Normalize the training features
                 ticker_data_frames.append(ticker_df)
         except :
@@ -209,8 +208,8 @@ def ohlv_to_dataframe(tickers:list[str], period:str="2y", interval:str='1d'):
 
     df = pd.concat(ticker_data_frames, axis=1)
     # to many stock leads to nan
-    df.replace([np.inf, -np.inf], np.nan, inplace=True)
-    df.dropna(inplace=True)
+    # df.replace([np.inf, -np.inf], np.nan, inplace=True)
+    df.dropna(inplace=True, axis=0)
     print("total shape", df.shape)
 
     # Shift the dataframe up by one to align current features with the next step's outcomes
@@ -403,47 +402,60 @@ def ohlv_to_dataframe_inference(tickers:list[str], period:str="2y", interval:str
     Returns:
         Tuple[pd.DataFrame, dict] : donnees d analyse, indice de denormalisation
     """
+    kraken = False
+    if interval in ["1", "5", "15", "30", "60", "240", "1440", "10080", "21600"]:
+        kraken = True
+
     ticker_data_frames = []
     dict_unorm = {}
     for ticker in tickers:
-        # Download historical data for the ticker
-        data = yf.download(ticker, period=period, interval=interval) # checker pour faire un model jour heur minute
+        try : 
+            # Download historical data for the ticker
+            if kraken :
+                data = get_kraken_data(ticker, interval)
+            else :
+                data = yf.download(ticker, period=period, interval=interval) # checker pour faire un model jour heur minute
 
-        # Calculate the daily percentage change
-        close = data['Close']
-        upper, lower = calculate_bollinger_bands(close, window=14, num_of_std=2)
-        width = upper - lower
-        rsi = calculate_rsi(close, window=14)
-        roc = calculate_roc(close, periods=14)
-        volume = data['Volume']
-        diff = data['Close'].diff(1)
-        percent_change_close = data['Close'].pct_change() * 100
+            # Calculate the daily percentage change
+            close = data['Close']
+            upper, lower = calculate_bollinger_bands(close, window=14, num_of_std=2)
+            width = upper - lower
+            rsi = calculate_rsi(close, window=14)
+            roc = calculate_roc(close, periods=14)
+            volume = data['Volume']
+            diff = data['Close'].diff(1)
+            percent_change_close = data['Close'].pct_change() * 100
 
-        # Create a DataFrame for the current ticker and append it to the list
-        ticker_df = pd.DataFrame({
-            ticker+'_close': close.squeeze(),
-            ticker+'_width': width.squeeze(),
-            ticker+'_rsi': rsi.squeeze(),
-            ticker+'_roc': roc.squeeze(),
-            ticker+'_volume': volume.squeeze(),
-            ticker+'_diff': diff.squeeze(),
-            ticker+'_percent_change_close': percent_change_close.squeeze(),
-        }, index=close.index)
+            # Create a DataFrame for the current ticker and append it to the list
+            ticker_df = pd.DataFrame({
+                ticker+'_close': close.squeeze(),
+                ticker+'_width': width.squeeze(),
+                ticker+'_rsi': rsi.squeeze(),
+                ticker+'_roc': roc.squeeze(),
+                ticker+'_volume': volume.squeeze(),
+                ticker+'_diff': diff.squeeze(),
+                ticker+'_percent_change_close': percent_change_close.squeeze(),
+            }, index=close.index)
 
-        MEAN = ticker_df.mean()
-        STD = ticker_df.std()
+            dict_unorm[ticker] = (ticker_df[ticker+'_close'].mean(), ticker_df[ticker+'_close'].std())
+            MEAN = ticker_df.mean()
+            STD = ticker_df.std()
+            STD.replace(0, 1, inplace=True)
+            ticker_df = (ticker_df - MEAN) / STD
 
-        # Normalize the training features
-        dict_unorm[ticker] = (ticker_df[ticker+'_close'].mean(), ticker_df[ticker+'_close'].std())
-        ticker_df = (ticker_df - MEAN) / STD
-        ticker_data_frames.append(ticker_df)
-        
+            ticker_df.replace([np.inf, -np.inf], np.nan, inplace=True)
+            ticker_df.dropna(inplace=True)
+            if ticker_df.shape[0] > 700:
+                ticker_data_frames.append(ticker_df)
+        except :
+            print("error at ", ticker)
+            continue
+
     df = pd.concat(ticker_data_frames, axis=1)
+    # to many stock leads to nan
     df.replace([np.inf, -np.inf], np.nan, inplace=True)
-    df.dropna(inplace=True)
-
-    # Remove the last row from both the features and labels to maintain consistent data pairs
-    df = df.iloc[:-1]
+    df.dropna(inplace=True, axis=0)
+    print("total shape", df.shape)
 
     return df, dict_unorm
 
@@ -459,29 +471,31 @@ def dataframe_to_dataset_inference(df:pd.DataFrame, tickers:list[str]=TICKERS):
     """
     sequences_dict = {}
     for ticker in tickers:
+        try:
+            # Extract close and volume data for the ticker
+            close = df[ticker+'_close'].values
+            width = df[ticker+'_width'].values
+            rsi = df[ticker+'_rsi'].values
+            roc = df[ticker+'_roc'].values
+            volume = df[ticker+'_volume'].values
+            diff = df[ticker+'_diff'].values
+            pct_change = df[ticker+'_percent_change_close'].values
 
-        # Extract close and volume data for the ticker
-        close = df[ticker+'_close'].values
-        width = df[ticker+'_width'].values
-        rsi = df[ticker+'_rsi'].values
-        roc = df[ticker+'_roc'].values
-        volume = df[ticker+'_volume'].values
-        diff = df[ticker+'_diff'].values
-        pct_change = df[ticker+'_percent_change_close'].values
+            # Combine close and volume data
+            ticker_data = np.column_stack((close,
+                                        width,
+                                        rsi,
+                                        roc,
+                                        volume,
+                                        diff,
+                                        pct_change))
 
-        # Combine close and volume data
-        ticker_data = np.column_stack((close,
-                                    width,
-                                    rsi,
-                                    roc,
-                                    volume,
-                                    diff,
-                                    pct_change))
+            # Generate sequences
+            ticker_sequences = create_sequences_inference(ticker_data)
 
-        # Generate sequences
-        ticker_sequences = create_sequences_inference(ticker_data)
-
-        sequences_dict[ticker] = ticker_sequences
+            sequences_dict[ticker] = ticker_sequences
+        except :
+            print("ticker got seq issues :", ticker)
 
     # split in another func ?
     return sequences_dict

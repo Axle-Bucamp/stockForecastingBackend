@@ -80,5 +80,5 @@ if __name__ == '__main__':
         model = ConvCausalLTSM(input_shape=input_sample.shape)
         del input_sample
         # LtsmAttentionforecastPred, ConvCausalLTSM
-        model = train_model(model, dataloader, dataloader_val, epochs=100, learning_rate=0.01, lrfn=CosineWarmup(0.01, 100).lrfn, checkpoint_file=load("weight/best_model.pth"))
+        model = train_model(model, dataloader, dataloader_val, epochs=10, learning_rate=0.01, lrfn=CosineWarmup(0.01, 10).lrfn, checkpoint_file=load("weight/best_model.pth"))
 

@@ -29,13 +29,13 @@ if __name__ == '__main__':
     TICKERS_ETF = ["^GSPC", "^FCHI", "^IXIC","EBIT.TO", "BTC-USD"]
     """
     
-    """
+    
     # live mode
     # only crypto kraken api
     tickers= [ "CRO-EUR", 'SAND', 'IMX', "GALA", "AXS", "MANA", "AAVE", "ETH-USD", "CRO-USD", "BTC-USD", "XRP-USD", "ADA-USD", "SOL-USD",  "PEPE-USD", "POPCAT-USD", "DOGE-USD", "TRUMP-USD", "SUI-USD"]
     tickers_val = ['LINK-USD', 'ICP-USD', 'FET-USD', 'FIL-USD', "ETH-EUR"]
-    """
     
+    """
     # to much stoc loaded lead to the exclusion of 
     # almost every index cause low probability 
     # of getting every stock at max
@@ -54,11 +54,12 @@ if __name__ == '__main__':
     # Split into training and validation sets
     tickers = enabled_assets[:split_index]
     tickers_val = enabled_assets[split_index:]
-    
+    """
+
     # tran data
     # interval standard : ["1", "5", "15", "30", "60", "240", "1440", "10080", "21600"]
     # add for loop ? => fine tune on one interval + fine tune 1 epoch on focused one
-    interval = "60" 
+    interval = "1" 
     dataset = StockDataset(ticker=tickers, interval=interval) #, interval='1'
     dataloader = DataLoader(dataset, batch_size=256, shuffle=True, num_workers=1)
 

@@ -5,3 +5,4 @@ class SequenceRequest(str, Enum):
     DAILY = "days"
     MONTHLY = "months"
     LIVE = "minutes"
+    THHITY = "thirty"

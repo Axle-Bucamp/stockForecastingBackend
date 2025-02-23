@@ -18,7 +18,7 @@ redis_client = redis.Redis(
     db=0
 )
 
-def load_data_for_group(group_name: str) -> pd.DataFrame:
+def load_data_for_group(group_name: str, interval:str) -> pd.DataFrame:
     """
     Load stock data for a given group from Redis.
     
@@ -32,10 +32,10 @@ def load_data_for_group(group_name: str) -> pd.DataFrame:
         HTTPException: If reading the data from Redis fails.
     """
     try:
-        key = f"{group_name}_days"
+        key = f"{group_name}_{interval}"
         json_data = redis_client.get(key)
         if not json_data:
-            raise HTTPException(status_code=404, detail=f"No data found in Redis for group '{group_name}'")
+            raise HTTPException(status_code=404, detail=f"No data found in Redis for group '{group_name}' given interval {interval}")
         # Decode the JSON bytes to string and convert to DataFrame.
         json_str = StringIO(json_data.decode('utf-8'))
         df = pd.read_json(json_str, orient="records")
@@ -49,7 +49,7 @@ def load_data_for_group(group_name: str) -> pd.DataFrame:
             detail=f"Failed to load data for group '{group_name}' from Redis: {str(e)}"
         )
 
-def load_data_for_group_from_file(group_name: str) -> pd.DataFrame:
+def load_data_for_group_from_file(group_name: str, interval:str) -> pd.DataFrame:
     """
     Load stock data for a given group from a CSV file.
     
@@ -63,7 +63,7 @@ def load_data_for_group_from_file(group_name: str) -> pd.DataFrame:
         HTTPException: If reading the CSV file fails.
     """
     try:
-        df = pd.read_csv(f'data/{group_name}_days.csv', parse_dates=['Date'])
+        df = pd.read_csv(f'data/{group_name}_{interval}.csv', parse_dates=['Date'])
         return df
     except Exception as e:
         raise HTTPException(
@@ -161,7 +161,7 @@ def predict_stock(ticker: str, seq: SequenceRequest):
         raise HTTPException(status_code=400, detail="Ticker not found in groups")
 
     try:
-        df = pd.read_csv(f'data/{group_name}_days.csv', parse_dates=['Date'])
+        df = pd.read_csv(f'data/{group_name}_{seq}.csv', parse_dates=['Date'])
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error reading CSV file: {str(e)}")
     
@@ -171,7 +171,7 @@ def predict_stock(ticker: str, seq: SequenceRequest):
 # Data Retrieval Endpoints
 # -----------------------------
 
-@app.get("/api/json")
+@app.get(f"/api/json")
 def get_data():
     """
     Fetch all stock data as JSON.
@@ -180,17 +180,20 @@ def get_data():
         JSONResponse: Stock data in JSON format.
     """
     # For demonstration, use a default group (e.g., "tech"). Adjust as needed.
+    # for seq in ....
     default_group = "tech"
-    df = load_data_for_group(default_group)
+    default_seq = "days"
+    df = load_data_for_group(default_group, default_seq)
     
     return JSONResponse(content=df.to_json(orient="records", date_format="iso"))
 
-@app.get("/api/json/stock/{ticker}")
-def get_data_by_stock(ticker: str):
+@app.get("/api/json/stock/{seq}/{ticker}")
+def get_data_by_stock(ticker: str, seq: SequenceRequest):
     """
     Fetch the data for a specific stock using its ticker symbol.
     
     Args:
+        seq (SequenceRequest) : one among days, minutes, months, thirty
         ticker (str): The stock ticker symbol.
     
     Returns:
@@ -203,7 +206,7 @@ def get_data_by_stock(ticker: str):
     if not group_name:
         raise HTTPException(status_code=400, detail=f"Ticker {ticker} not found in groups.")
     
-    df = load_data_for_group(group_name)
+    df = load_data_for_group(group_name, seq)
     if f"{ticker}_close" not in df.columns:
         raise HTTPException(status_code=404, detail=f"Stock data for {ticker} not found.")
     
@@ -234,7 +237,7 @@ def get_stock_at_date(ticker: str, date: str):
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid date format: use yyyy-mm-dd.")
     
-    df = load_data_for_group(group_name)
+    df = load_data_for_group(group_name, "days")
     if f"{ticker}_close" not in df.columns or f"{ticker}_pred" not in df.columns:
         raise HTTPException(status_code=404, detail=f"Stock data for {ticker} not found.")
     
@@ -273,7 +276,7 @@ def get_stock_in_daterange(ticker: str, date_begin: str, date_end: str):
     if start_date > end_date:
         raise HTTPException(status_code=400, detail="Start date must be earlier than or equal to end date.")
     
-    df = load_data_for_group(group_name)
+    df = load_data_for_group(group_name, "days")
     if f"{ticker}_close" not in df.columns or f"{ticker}_pred" not in df.columns:
         raise HTTPException(status_code=404, detail=f"Stock data for {ticker} not found.")
     
