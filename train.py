@@ -4,7 +4,8 @@ if __name__ == '__main__':
     from hygdra_forecasting.model.train import setup_seed, train_model
     from hygdra_forecasting.utils.learning_rate_sheduler import CosineWarmup
     from hygdra_forecasting.model.build import ConvCausalLTSM, LtsmAttentionforecastPred
-    from hygdra_forecasting.dataloader.dataloader import StockDataset
+    from hygdra_forecasting.dataloader.dataloader import StockDataset as standard_datloader
+    from hygdra_forecasting.dataloader.dataloader_kraken import StockDataset
     from torch import device, cuda, load
     from torch.utils.data import DataLoader
     import json
@@ -32,7 +33,7 @@ if __name__ == '__main__':
     
     # live mode
     # only crypto kraken api
-    tickers= [ "CRO-EUR", 'SAND', 'IMX', "GALA", "AXS", "MANA", "AAVE", "ETH-USD", "CRO-USD", "BTC-USD", "XRP-USD", "ADA-USD", "SOL-USD",  "PEPE-USD", "POPCAT-USD", "DOGE-USD", "TRUMP-USD", "SUI-USD"]
+    tickers= [ 'SAND-USD', 'IMX-USD', "GALA-USD", "AXS-USD", "MANA-USD", "AAVE-USD", "ETH-USD", "CRO-USD", "BTC-USD", "XRP-USD", "ADA-USD", "SOL-USD",  "PEPE-USD", "POPCAT-USD", "DOGE-USD", "TRUMP-USD", "SUI-USD"]
     tickers_val = ['LINK-USD', 'ICP-USD', 'FET-USD', 'FIL-USD', "ETH-EUR"]
     
     """

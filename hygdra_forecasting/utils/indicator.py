@@ -104,7 +104,7 @@ def dict_calculate_roc(data: np.ndarray, periods: int = 10) -> np.ndarray:
         np.ndarray: ROC values.
     """
     roc = ((data[periods:] - data[:-periods]) / data[:-periods]) * 100
-    return np.concatenate((np.full(periods, np.nan), roc))
+    return roc
 
 def dict_calculate_diff_and_pct_change(data: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """

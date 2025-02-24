@@ -214,6 +214,7 @@ def dict_to_dataset(data_json: dict, labels_json: dict):
     print("Input data keys:", data_json.keys())
     print("label :", labels_json.keys())
     for ticker in data_json.keys():
+        
         # Extract OHLCV features from JSON dictionary
         ticker_data_json = data_json.get(ticker, {})
         close = np.array(ticker_data_json.get("close", []), dtype=np.float64)
@@ -223,10 +224,10 @@ def dict_to_dataset(data_json: dict, labels_json: dict):
         volume = np.array(ticker_data_json.get("volume", []), dtype=np.float64)
         diff = np.array(ticker_data_json.get("diff", []), dtype=np.float64)
         pct_change = np.array(ticker_data_json.get("percent_change_close", []), dtype=np.float64)
-            
+        
         # Combine features into a single NumPy array
         ticker_data = np.column_stack((close, width, rsi, roc, volume, diff, pct_change))
-            
+        
         # Generate sequences
         ticker_sequences, lab = create_sequences(ticker_data, np.array(labels_json.get(ticker))[SEQUENCE_LEN-1:])
         sequences_dict[ticker] = ticker_sequences
@@ -245,8 +246,7 @@ def dict_to_dataset(data_json: dict, labels_json: dict):
     # Convert to numpy arrays
     all_sequences = np.array(all_sequences)
     all_labels = np.array(all_labels)
-    print("Training shape", all_sequences.shape)
-    
+    print("Training shape", all_sequences.shape, all_labels.shape)
     return all_sequences, all_labels
 
 def json_to_dataset_inference(data_json: dict, tickers: list[str] = TICKERS):

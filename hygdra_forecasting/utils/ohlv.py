@@ -33,19 +33,26 @@ def get_kraken_data_to_dataframe(ticker:str, interval:str) -> pd.DataFrame:
     return data 
 
 def get_kraken_data_to_json(tickers:list[str], interval:str) -> tuple[dict, dict]:
-    pairs = "".join([ticker.split("-")[0] + "USD," for ticker in tickers])
-    url = f"https://api.kraken.com/0/public/OHLC?pair={pairs[:-1]}&interval={interval}"
+    pairs = [ticker.split("-")[0] + "USD" for ticker in tickers]
+    data_dict = {}
+    for pair in pairs:
+        url = f"https://api.kraken.com/0/public/OHLC?pair={pair}&interval={interval}"
 
-    payload = {}
-    headers = {
-    'Accept': 'application/json'
-    }
+        payload = {}
+        headers = {
+        'Accept': 'application/json'
+        }
 
-    response = requests.request("GET", url, headers=headers, data=payload)
+        response = requests.request("GET", url, headers=headers, data=payload)
 
-    data = json.loads(response.text)
+        data = json.loads(response.text)
+        print("pair", pair)
+        for key, values in data["result"].items():
+            if key != "last" :
+                data_dict[pair] = values
+
     # [int <time>, string <open>, string <high>, string <low>, string <close>, string <vwap>, string <volume>, int <count>]
-    processed_data, unorm_dict = kraken_preprocessing(data["result"] )
+    processed_data, unorm_dict = kraken_preprocessing(data_dict)
     return processed_data, unorm_dict
 
 def kraken_preprocessing(data: dict) -> tuple[dict, dict]:
@@ -60,7 +67,6 @@ def kraken_preprocessing(data: dict) -> tuple[dict, dict]:
     # data.pop("last")
     for key, values in data.items():
         if key != "last" :
-            print(key)
             values = pd.DataFrame(values, columns=["Date", "Open", "High", "Low", "Close", "vwap", "Volume", "count"])
             ## repartir sur un mode dataframe ?
 
@@ -79,18 +85,22 @@ def kraken_preprocessing(data: dict) -> tuple[dict, dict]:
             processed_data[key]["roc"] = dict_calculate_roc(processed_data[key]["close"], periods=14)
             processed_data[key]["diff"], processed_data[key]["percent_change_close"] = dict_calculate_diff_and_pct_change(processed_data[key]["close"])
 
-            # get min and max shape ? skip n to rebound
+            # corriger la shape 
             # gestion decalage
             min_shape = processed_data[key]["upper"].shape[0]
+            min_shape_roc = processed_data[key]["roc"].shape[0]
             max_shape = processed_data[key]["close"].shape[0]
+
             for indic in processed_data[key].keys():
-                if indic not in ["upper", "lower", "width", "rsi"]:
-                    processed_data[key][indic] = processed_data[key][indic][max_shape-min_shape:]
+                if indic not in ["upper", "lower", "width", "rsi", "roc"]:
+                    processed_data[key][indic] = processed_data[key][indic][14:]
+                elif indic in ["upper", "lower", "width", "rsi"]:
+                    processed_data[key][indic] = processed_data[key][indic][1:]
 
                 MEAN = np.mean(processed_data[key][indic])
                 STD = np.std(processed_data[key][indic])
                 processed_data[key][indic] = (processed_data[key][indic] - MEAN) / STD
-                unnorm_dict[key] = {"mean" : MEAN, "std" : STD}
+                unnorm_dict[key] = {"indic" : {"mean" : MEAN, "std" : STD}}
 
     return processed_data, unnorm_dict
 
