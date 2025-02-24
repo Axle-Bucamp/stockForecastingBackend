@@ -46,7 +46,7 @@ def get_kraken_data_to_json(tickers:list[str], interval:str) -> tuple[dict, dict
         response = requests.request("GET", url, headers=headers, data=payload)
 
         data = json.loads(response.text)
-        print("pair", pair)
+
         for key, values in data["result"].items():
             if key != "last" :
                 data_dict[pair] = values
@@ -86,11 +86,6 @@ def kraken_preprocessing(data: dict) -> tuple[dict, dict]:
             processed_data[key]["diff"], processed_data[key]["percent_change_close"] = dict_calculate_diff_and_pct_change(processed_data[key]["close"])
 
             # corriger la shape 
-            # gestion decalage
-            min_shape = processed_data[key]["upper"].shape[0]
-            min_shape_roc = processed_data[key]["roc"].shape[0]
-            max_shape = processed_data[key]["close"].shape[0]
-
             for indic in processed_data[key].keys():
                 if indic not in ["upper", "lower", "width", "rsi", "roc"]:
                     processed_data[key][indic] = processed_data[key][indic][14:]
@@ -99,7 +94,10 @@ def kraken_preprocessing(data: dict) -> tuple[dict, dict]:
 
                 MEAN = np.mean(processed_data[key][indic])
                 STD = np.std(processed_data[key][indic])
+                if STD == 0 :
+                    STD = 1
                 processed_data[key][indic] = (processed_data[key][indic] - MEAN) / STD
+                # print(STD, MEAN, indic, key)
                 unnorm_dict[key] = {"indic" : {"mean" : MEAN, "std" : STD}}
 
     return processed_data, unnorm_dict

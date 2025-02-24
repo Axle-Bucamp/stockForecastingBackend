@@ -4,7 +4,9 @@ if __name__ == '__main__':
     from hygdra_forecasting.model.train import setup_seed, train_model
     from hygdra_forecasting.utils.learning_rate_sheduler import CosineWarmup
     from hygdra_forecasting.model.build import ConvCausalLTSM, LtsmAttentionforecastPred
-    from hygdra_forecasting.dataloader.dataloader import StockDataset
+    from hygdra_forecasting.dataloader.dataloader import StockDataset as standar
+    from hygdra_forecasting.dataloader.dataloader_kraken import StockDataset 
+
     from torch import device, cuda, load
     from torch.utils.data import DataLoader
     import json
