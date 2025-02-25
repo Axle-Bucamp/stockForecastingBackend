@@ -16,9 +16,16 @@ from enum import Enum
 """
 
 class TKGroup(Enum):
+    CRYPTO_STANDARD = ("crypto-standard", ['SAND-USD', 'IMX-USD', "GALA-USD", "AXS-USD", "MANA-USD", "AAVE-USD", "ETH-USD", "CRO-USD", "BTC-USD", "XRP-USD", "ADA-USD", "SOL-USD",  "PEPE-USD", "POPCAT-USD", "DOGE-USD", "TRUMP-USD", "SUI-USD"])
+
+class TKGroupName(str, Enum):
+    cryptoStandard = "crypto-standard"
+
+"""
+class TKGroup(Enum):
     CRYPTO_STANDARD = ("crypto-standard", ["ADA-USD", "SOL-USD", "XRP-USD", "ETH-USD", "BTC-USD"])
     FREEDOM = ("thisiselonmusk", ["XRP-USD", "SHIB-USD", "SOL-USD", "BTC-USD"])
-    WEB3 = ("web3", ["LINK-USD", "SOL"])
+    WEB3 = ("web3", ["LINK-USD", "SOL"]) # "LINK-USD", "SOL"
     GAME = ('gaming', ['SAND', 'IMX', "GALA", "AXS", "MANA"])
     DEFI = ("defi", ['AVAX-USD', 'LINK-USD', 'UNI-USD', 'STX-USD', 'FTM-USD', "INJ-USD"])
     MEMECOIN = ("memecoin", [ "SHIB-USD"])
@@ -37,3 +44,4 @@ class TKGroupName(str, Enum):
     #finance = "finance"
     #energie = "energie"
 
+"""

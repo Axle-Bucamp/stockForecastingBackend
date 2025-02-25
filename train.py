@@ -36,31 +36,10 @@ if __name__ == '__main__':
     tickers= [ 'SAND-USD', 'IMX-USD', "GALA-USD", "AXS-USD", "MANA-USD", "AAVE-USD", "ETH-USD", "CRO-USD", "BTC-USD", "XRP-USD", "ADA-USD", "SOL-USD",  "PEPE-USD", "POPCAT-USD", "DOGE-USD", "TRUMP-USD", "SUI-USD"]
     tickers_val = ['LINK-USD', 'ICP-USD', 'FET-USD', 'FIL-USD', "ETH-EUR"]
     
-    """
-    # to much stoc loaded lead to the exclusion of 
-    # almost every index cause low probability 
-    # of getting every stock at max
-    # Load enabled assets from JSON
-    with open("enabled_assets.json", "r") as file:
-        enabled_assets = json.load(file)
-
-    # Shuffle the list to ensure randomness
-    random.shuffle(enabled_assets)
-
-    #enabled_assets = enabled_assets # limit
-    # Define split ratio (e.g., 80% train, 20% validation)
-    split_ratio = 0.9
-    split_index = int(len(enabled_assets) * split_ratio)
-
-    # Split into training and validation sets
-    tickers = enabled_assets[:split_index]
-    tickers_val = enabled_assets[split_index:]
-    """
-
     # tran data
     # interval standard : ["1", "5", "15", "30", "60", "240", "1440", "10080", "21600"]
     # add for loop ? => fine tune on one interval + fine tune 1 epoch on focused one
-    interval = "1" 
+    interval = "1440" 
     dataset = StockDataset(ticker=tickers, interval=interval) #, interval='1'
     dataloader = DataLoader(dataset, batch_size=256, shuffle=True, num_workers=1)
 

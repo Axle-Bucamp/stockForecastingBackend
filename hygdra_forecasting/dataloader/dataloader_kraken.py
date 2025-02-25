@@ -25,7 +25,7 @@ class StockDataset(Dataset):
         """
         Fetch stock data from Yahoo Finance
         """
-        preprocess_data, unorm = get_kraken_data_to_json(self.ticker, self.interval)
+        preprocess_data, unorm, _ = get_kraken_data_to_json(self.ticker, self.interval)
         data, label = preprocessing_training_mode(preprocess_data)
         
         train_sequences, train_labels = dict_to_dataset(data, label)

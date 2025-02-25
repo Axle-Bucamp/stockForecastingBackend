@@ -32,7 +32,7 @@ def get_kraken_data_to_dataframe(ticker:str, interval:str) -> pd.DataFrame:
     print("======>", ticker)
     return data 
 
-def get_kraken_data_to_json(tickers:list[str], interval:str) -> tuple[dict, dict]:
+def get_kraken_data_to_json(tickers:list[str], interval:str) -> tuple[dict, dict, dict]:
     pairs = [ticker.split("-")[0] + "USD" for ticker in tickers]
     data_dict = {}
     for pair in pairs:
@@ -52,10 +52,10 @@ def get_kraken_data_to_json(tickers:list[str], interval:str) -> tuple[dict, dict
                 data_dict[pair] = values
 
     # [int <time>, string <open>, string <high>, string <low>, string <close>, string <vwap>, string <volume>, int <count>]
-    processed_data, unorm_dict = kraken_preprocessing(data_dict)
-    return processed_data, unorm_dict
+    processed_data, unorm_dict, time_index = kraken_preprocessing(data_dict)
+    return processed_data, unorm_dict, time_index
 
-def kraken_preprocessing(data: dict) -> tuple[dict, dict]:
+def kraken_preprocessing(data: dict) -> tuple[dict, dict, dict]:
     """
     Processes Kraken OHLCV data stored in a dictionary format.
     Extracts close, low, high, open, and volume values for further analysis.
@@ -65,6 +65,7 @@ def kraken_preprocessing(data: dict) -> tuple[dict, dict]:
 
     # [int <time>, string <open>, string <high>, string <low>, string <close>, string <vwap>, string <volume>, int <count>]
     # data.pop("last")
+    time_index = {}
     for key, values in data.items():
         if key != "last" :
             values = pd.DataFrame(values, columns=["Date", "Open", "High", "Low", "Close", "vwap", "Volume", "count"])
@@ -77,7 +78,8 @@ def kraken_preprocessing(data: dict) -> tuple[dict, dict]:
                 "open": np.array(values["Open"], dtype=np.float64),
                 "volume": np.array(values["Volume"], dtype=np.float64),
             }
-
+            time_index[key] = np.array(values["Date"])
+            
             processed_data[key]["upper"], processed_data[key]["lower"] = dict_calculate_bollinger_bands(processed_data[key]["close"], window=14, num_of_std=2)
             processed_data[key]["width"] = processed_data[key]["upper"] - processed_data[key]["lower"]
 
@@ -86,6 +88,7 @@ def kraken_preprocessing(data: dict) -> tuple[dict, dict]:
             processed_data[key]["diff"], processed_data[key]["percent_change_close"] = dict_calculate_diff_and_pct_change(processed_data[key]["close"])
 
             # corriger la shape 
+            time_index[key] = time_index[key][14:]
             for indic in processed_data[key].keys():
                 if indic not in ["upper", "lower", "width", "rsi", "roc"]:
                     processed_data[key][indic] = processed_data[key][indic][14:]
@@ -98,9 +101,12 @@ def kraken_preprocessing(data: dict) -> tuple[dict, dict]:
                     STD = 1
                 processed_data[key][indic] = (processed_data[key][indic] - MEAN) / STD
                 # print(STD, MEAN, indic, key)
-                unnorm_dict[key] = {"indic" : {"mean" : MEAN, "std" : STD}}
+                if key not in unnorm_dict.keys():
+                    unnorm_dict[key] = {indic : {"mean" : MEAN, "std" : STD}}
+                else :
+                    unnorm_dict[key][indic] = {"mean" : MEAN, "std" : STD}
 
-    return processed_data, unnorm_dict
+    return processed_data, unnorm_dict, time_index
 
 def preprocessing_training_mode(processed_data:dict):
     label = {}

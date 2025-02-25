@@ -25,7 +25,7 @@ class StockDataset(Dataset):
         """
         df, label = ohlv_to_dataframe(self.ticker, self.period, self.interval)
         train_sequences, train_labels = dataframe_to_dataset(df, label, self.ticker)
-        
+        # to json
         return train_sequences, train_labels
 
     def __len__(self):

@@ -156,12 +156,8 @@ def predict_stock(ticker: str, seq: SequenceRequest):
     Raises:
         HTTPException: If the ticker is not found in any group or if the CSV file cannot be read.
     """
-    group_name = get_group_for_ticker(ticker)
-    if not group_name:
-        raise HTTPException(status_code=400, detail="Ticker not found in groups")
-
     try:
-        df = pd.read_csv(f'data/{group_name}_{seq}.csv', parse_dates=['Date'])
+        df = pd.read_csv(f'data/{ticker}_{seq}.csv', parse_dates=['Date'])
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error reading CSV file: {str(e)}")
     

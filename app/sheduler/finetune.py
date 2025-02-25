@@ -4,13 +4,14 @@ from datamodel.ticker_cluster import TKGroup
 from torch import save, load
 from torch.utils.data import DataLoader
 from torch import cuda, device
-from hygdra_forecasting.dataloader.dataloader import StockDataset
+from hygdra_forecasting.dataloader.dataloader import StockDataset as standard
+from hygdra_forecasting.dataloader.dataloader_kraken import StockDataset
 from hygdra_forecasting.utils.learning_rate_sheduler import CosineWarmup
 from hygdra_forecasting.model.train import train_model, setup_seed
 import torch.nn as nn
 
 class StockFineTuner:
-    def __init__(self, interval: str = 'days', base_weight: str = 'weight/days/best_model.pth', epoch=5, learnig_rate=0.01):
+    def __init__(self, interval: str = 'days', base_weight: str = 'weight/days/best_model.pth', epoch=100, learnig_rate=0.01):
         self.interval = interval
         self.base_weight = base_weight
         self.device = device('cuda:0') if cuda.is_available() else device('cpu')
@@ -36,8 +37,9 @@ class StockFineTuner:
             epochs=self.epoch,
             learning_rate=self.learning_rate,
             save_epoch=False,
-            lrfn=self.tuning_scheduler,
-            criterion=nn.L1Loss(),
+            # lrfn=self.tuning_scheduler,
+            lrfn=CosineWarmup(self.learning_rate, self.epoch).lrfn,
+            # criterion=nn.L1Loss(), # l1 seems to make it harder
             checkpoint_file=load(self.base_weight)
         )
 
@@ -52,7 +54,7 @@ class StockFineTuner:
 if __name__ == "__main__":
     # {"days" : '1440', "minutes" : '1', "hours" : '60', "thrity" : "30"}
     interval = "minutes"
-    tuner = StockFineTuner(interval=interval, base_weight=f'../../weight/best_model.pth')
+    tuner = StockFineTuner(interval=interval, base_weight=f'weight/minutes/best_model.pth')
     tuner.finetune_many()
     # training is still realy weirdly reset while not in training phase
     # manage non crypto course via kraken

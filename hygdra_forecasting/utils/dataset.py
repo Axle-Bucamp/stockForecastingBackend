@@ -211,8 +211,7 @@ def dict_to_dataset(data_json: dict, labels_json: dict):
     """
     sequences_dict = {}
     sequence_labels = {}
-    print("Input data keys:", data_json.keys())
-    print("label :", labels_json.keys())
+
     for ticker in data_json.keys():
         
         # Extract OHLCV features from JSON dictionary
@@ -249,7 +248,7 @@ def dict_to_dataset(data_json: dict, labels_json: dict):
     print("Training shape", all_sequences.shape, all_labels.shape)
     return all_sequences, all_labels
 
-def json_to_dataset_inference(data_json: dict, tickers: list[str] = TICKERS):
+def dict_to_dataset_inference(data_json: dict):
     """
     Transform a stock OHLCV dataset stored in JSON-like dictionary format into time series sequences for inference.
 
@@ -260,9 +259,7 @@ def json_to_dataset_inference(data_json: dict, tickers: list[str] = TICKERS):
         dict: Dictionary of sequences for each ticker.
     """
     sequences_dict = {}
-    print("Input data keys:", data_json.keys())
-    
-    for ticker in tickers:
+    for ticker in data_json.keys():
         try:
             # Extract OHLCV features from JSON dictionary
             ticker_data_json = data_json.get(ticker, {})
