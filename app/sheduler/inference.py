@@ -47,7 +47,7 @@ class StockPredictor:
                     predictions = predictions.squeeze().numpy().reshape(-1)
                     
                     df[ticker]["forecasting"] = predictions * dict_unorm[ticker]["close"]["std"] + dict_unorm[ticker]["close"]["mean"]
-                    df[ticker]["close"] = df[ticker]["close"] * dict_unorm[ticker]["close"]["std"] + dict_unorm[ticker]["close"]["std"]
+                    df[ticker]["close"] = df[ticker]["close"] * dict_unorm[ticker]["close"]["std"] + dict_unorm[ticker]["close"]["mean"]
 
                     # prediction interval # (double check)
                     offset = None

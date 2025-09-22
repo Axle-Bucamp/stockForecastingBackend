@@ -1,0 +1,167 @@
+{
+  "test_run_info": {
+    "start_time": "2025-09-22T08:23:51.035434",
+    "end_time": "2025-09-22T08:24:20.067435",
+    "duration_seconds": 29.032001,
+    "total_suites": 3,
+    "successful_suites": 0,
+    "success_rate": 0.0
+  },
+  "test_results": {
+    "Inference Fix Validation Tests": {
+      "file": "test_inference_fix.py",
+      "name": "Inference Fix Validation Tests",
+      "return_code": 1,
+      "stdout": "[TOOL] Hygdra Forecasting - Inference Fix Validation\n==================================================\n[INFO] Testing inference fix on device: cpu\n[TOOL] Starting Inference Fix Validation Tests\n==================================================\n\n[TEST] Testing Normalization/Denormalization Fix\n   [DATA] Original prices: [47000. 47500. 48000. 46500. 48500.]\n   [DATA] Normalization params - Mean: 47500.00, Std: 707.11\n   [DATA] Normalized data: [-0.70710678  0.          0.70710678 -1.41421356  1.41421356]\n   [PASS] Correct denormalization: [47000. 47500. 48000. 46500. 48500.]\n   [FAIL] Incorrect denormalization (old bug): [ 207.10678119  707.10678119 1207.10678119 -292.89321881 1707.10678119]\n   [PASS] Correct version restores original data: True\n   [FAIL] Incorrect version restores original data: False\n   [DATA] Mean absolute error with bug: 46792.893219\n   [DATA] Mean absolute error with fix: 0.000000\n   [PASS] PASSED: test_normalization_denormalization_fix\n\n[TEST] Testing Complete Inference Pipeline\n   [DATA] Original prices: [47500.0, 48000.0, 48500.0, 49000.0, 49500.0]\n   [DATA] Normalized prices: [-1.41421356 -0.70710678  0.          0.70710678  1.41421356]\n   [DATA] Unnorm params: {'mean': np.float64(48500.0), 'std': np.float64(707.1067811865476)}\n   [PASS] Denormalized close prices: [47500. 48000. 48500. 49000. 49500.]\n   [PASS] Restoration successful: True\n   [DATA] Max absolute difference: 0.00e+00\n   [PASS] PASSED: test_inference_pipeline_consistency\n\n[TEST] Testing Model Prediction Consistency\n   [FAIL] Test FAILED: name 'ConvCausalLTSM' is not defined\n   [FAIL] FAILED: test_model_prediction_consistency\n\n==================================================\n[DATA] INFERENCE FIX TEST SUMMARY\n==================================================\nTests Run: 3\nPassed: 2\nFailed: 1\nSuccess Rate: 66.7%\n\n[WARNING]  SOME INFERENCE FIX TESTS FAILED!\n[FAIL] The normalization fix needs further investigation.\n",
+      "stderr": "",
+      "success": false,
+      "timestamp": "2025-09-22T08:23:54.468039"
+    },
+    "Model Consistency Tests": {
+      "file": "test_model_consistency.py",
+      "name": "Model Consistency Tests",
+      "return_code": 1,
+      "stdout": "[SEARCH] Hygdra Forecasting - Model Consistency Test Suite\n============================================================\n[TOOL] Testing on device: cpu\n[ROCKET] Starting Hygdra Forecasting Model Consistency Tests\n============================================================\n\n[TEST] Test 1: Sequence Creation Consistency\n   [PASS] Training sequences shape: (50, 36, 7) (expected: (51, 36, 7))\n   [PASS] Inference sequences shape: (63, 36, 7) (expected: (64, 36, 7))\n\n[TEST] Test 2: Data Loading Consistency\n   [PASS] Data processing consistent: True\n   [PASS] Unnormalization parameters consistent: True\n   [PASS] Normalized data shape: (100,)\n   [PASS] Mean/Std stored: {'mean': np.float64(47750.0), 'std': np.float64(250.0)}\n\n[TEST] Test 3: Normalization/Denormalization Consistency\n   [PASS] Correct denormalization: True\n   [FAIL] Incorrect denormalization (old bug): False\n   [DATA] Original data range: [49725.31, 50296.49]\n   [DATA] Denormalized range: [49725.31, 50296.49]\n\n[TEST] Test 4: Model Behavior Consistency\n   [PASS] Model outputs identical: True\n   [DATA] Output values: ['-0.26280755', '-0.26280755', '-0.26280755', '-0.26280755', '-0.26280755']\n   [DATA] Output variance: 0.00e+00\n   [DATA] Train vs Eval mode difference: 3.02e-03\n\n[TEST] Test 5: Training/Inference Consistency\n   [DATA] Training loss: 0.913500\n   [DATA] Inference loss: 0.913483\n   [DATA] Loss difference: 0.000017\n   [PASS] Losses are different (expected due to dropout): True\n   [PASS] Eval mode consistency: True\n\n============================================================\n[DATA] TEST REPORT SUMMARY\n============================================================\nTotal Tests: 5\nPassed: 4\nFailed: 1\nSuccess Rate: 80.0%\n\n[LIST] Detailed Results:\n  sequence_creation: [FAIL] FAIL\n  data_loading: [PASS] PASS\n  normalization: [PASS] PASS\n  model_behavior: [PASS] PASS\n  training_inference: [PASS] PASS\n\n[SAVE] Detailed results saved to: test_results.json\n\n[WARNING]  SOME TESTS FAILED! Review the issues above.\n",
+      "stderr": "C:\\Users\\dying\\Documents\\stockForecastingBackend\\.venv\\Lib\\site-packages\\torch\\nn\\modules\\loss.py:616: UserWarning: Using a target size (torch.Size([100])) that is different to the input size (torch.Size([100, 1])). This will likely lead to incorrect results due to broadcasting. Please ensure they have the same size.\n  return F.mse_loss(input, target, reduction=self.reduction)\n",
+      "success": false,
+      "timestamp": "2025-09-22T08:23:58.680552",
+      "detailed_results": {
+        "sequence_creation": {
+          "passed": false,
+          "train_shape": [
+            50,
+            36,
+            7
+          ],
+          "inference_shape": [
+            63,
+            36,
+            7
+          ],
+          "train_sequences_count": 50,
+          "inference_sequences_count": 63
+        },
+        "data_loading": {
+          "passed": "True",
+          "data_shape": [
+            100
+          ],
+          "unnorm_params": {
+            "mean": 47750.0,
+            "std": 250.0
+          }
+        },
+        "normalization": {
+          "passed": true,
+          "original_range": [
+            49725.305587978335,
+            50296.49190734066
+          ],
+          "denormalized_range": [
+            49725.305587978335,
+            50296.49190734066
+          ],
+          "mean": 50001.81981712774,
+          "std": 97.17508671412305
+        },
+        "model_behavior": {
+          "passed": true,
+          "outputs": [
+            -0.26280754804611206,
+            -0.26280754804611206,
+            -0.26280754804611206,
+            -0.26280754804611206,
+            -0.26280754804611206
+          ],
+          "output_variance": 0.0,
+          "train_eval_difference": 0.003017723560333252
+        },
+        "training_inference": {
+          "passed": true,
+          "train_loss": 0.9135000705718994,
+          "inference_loss": 0.9134833812713623,
+          "eval_loss": 0.9134833812713623,
+          "loss_difference": 1.6689300537109375e-05,
+          "eval_consistency": true
+        }
+      }
+    },
+    "Training Consistency Tests": {
+      "file": "test_training_consistency.py",
+      "name": "Training Consistency Tests",
+      "return_code": 1,
+      "stdout": "[TARGET] Hygdra Forecasting - Training Consistency Test Suite\n============================================================\n[TARGET] Testing training consistency on device: cpu\n[TARGET] Starting Training Consistency Tests\n============================================================\n\n[TEST] Test 1: Sequence Creation Criteria\n   [PASS] Sequence shape correct: False\n   [PASS] Sequence count: 50 (expected: 51)\n   [PASS] Label count correct: False\n   [PASS] Time alignment correct: True\n   [DATA] Sequence shape: (50, 36, 7)\n   [DATA] Label shape: (50,)\n\n[TEST] Test 2: Data Loading Criteria\n   [PASS] Required features present: True\n   [PASS] Data normalized correctly: True\n   [PASS] Unnormalization params stored: True\n   [PASS] Feature lengths consistent: True\n   [DATA] Feature lengths: [86, 86, 86, 86, 86, 86, 86, 86, 86, 86, 86, 86]\n   [DATA] Close data stats - Mean: 0.0000, Std: 1.0000\n\n[TEST] Test 3: Model Training Criteria\nEpoch [1/3], Loss: 1.2066898941993713, lr: 0.0002\nValidation Loss after Epoch [1/3]: 0.7795056700706482\nEpoch [2/3], Loss: 1.223359376192093, lr: 0.00022000000000000003\nValidation Loss after Epoch [2/3]: 0.7786713242530823\nEpoch [3/3], Loss: 1.1126691699028015, lr: 0.00024\nValidation Loss after Epoch [3/3]: 0.7777606248855591\nTraining complete\n   [PASS] Initial loss: 1.208497\n   [PASS] Final loss: 1.101380\n   [PASS] Loss decreased: True\n   [PASS] Model in eval mode after training: True\n   [PASS] Model parameters changed: False\n\n[TEST] Test 4: Loss Calculation Criteria\n   [PASS] Loss value reasonable: True\n   [PASS] Loss consistent across runs: True\n   [PASS] Gradients computed correctly: True\n   [DATA] Loss value: 0.958871\n   [DATA] Loss variance: 0.00e+00\n\n[TEST] Test 5: Training/Inference Alignment\n   [PASS] Train/inference predictions different: True\n   [PASS] Eval mode consistent: True\n   [PASS] Train/inference losses different: True\n   [DATA] Train prediction: -0.247204\n   [DATA] Inference prediction: -0.245697\n   [DATA] Train loss: 0.283174\n   [DATA] Inference loss: 0.281573\n\n============================================================\n[DATA] TRAINING CONSISTENCY TEST REPORT\n============================================================\nTotal Tests: 5\nPassed: 3\nFailed: 2\nSuccess Rate: 60.0%\n\n[LIST] Detailed Results:\n  sequence_criteria: [FAIL] FAIL\n  data_loading: [PASS] PASS\n  model_training: [FAIL] FAIL\n  loss_calculation: [PASS] PASS\n  training_inference_alignment: [PASS] PASS\n\n[SAVE] Detailed results saved to: training_test_results.json\n\n[WARNING]  SOME TRAINING TESTS FAILED! Review the issues above.\n",
+      "stderr": "C:\\Users\\dying\\Documents\\stockForecastingBackend\\.venv\\Lib\\site-packages\\torch\\nn\\modules\\loss.py:616: UserWarning: Using a target size (torch.Size([32])) that is different to the input size (torch.Size([32, 1])). This will likely lead to incorrect results due to broadcasting. Please ensure they have the same size.\n  return F.mse_loss(input, target, reduction=self.reduction)\nC:\\Users\\dying\\Documents\\stockForecastingBackend\\.venv\\Lib\\site-packages\\torch\\nn\\modules\\loss.py:616: UserWarning: Using a target size (torch.Size([18])) that is different to the input size (torch.Size([18, 1])). This will likely lead to incorrect results due to broadcasting. Please ensure they have the same size.\n  return F.mse_loss(input, target, reduction=self.reduction)\nC:\\Users\\dying\\Documents\\stockForecastingBackend\\.venv\\Lib\\site-packages\\torch\\nn\\modules\\loss.py:616: UserWarning: Using a target size (torch.Size([32])) that is different to the input size (torch.Size([32, 1])). This will likely lead to incorrect results due to broadcasting. Please ensure they have the same size.\n  return F.mse_loss(input, target, reduction=self.reduction)\nC:\\Users\\dying\\Documents\\stockForecastingBackend\\.venv\\Lib\\site-packages\\torch\\nn\\modules\\loss.py:616: UserWarning: Using a target size (torch.Size([18])) that is different to the input size (torch.Size([18, 1])). This will likely lead to incorrect results due to broadcasting. Please ensure they have the same size.\n  return F.mse_loss(input, target, reduction=self.reduction)\nC:\\Users\\dying\\Documents\\stockForecastingBackend\\.venv\\Lib\\site-packages\\torch\\nn\\modules\\loss.py:616: UserWarning: Using a target size (torch.Size([20])) that is different to the input size (torch.Size([20, 1])). This will likely lead to incorrect results due to broadcasting. Please ensure they have the same size.\n  return F.mse_loss(input, target, reduction=self.reduction)\n",
+      "success": false,
+      "timestamp": "2025-09-22T08:24:20.052437",
+      "detailed_results": {
+        "sequence_criteria": {
+          "passed": false,
+          "sequence_shape": [
+            50,
+            36,
+            7
+          ],
+          "label_shape": [
+            50
+          ],
+          "expected_sequences": 51
+        },
+        "data_loading": {
+          "passed": true,
+          "features_present": true,
+          "normalized_correctly": "True",
+          "unorm_params_present": true,
+          "consistent_lengths": true,
+          "feature_lengths": [
+            86,
+            86,
+            86,
+            86,
+            86,
+            86,
+            86,
+            86,
+            86,
+            86,
+            86,
+            86
+          ]
+        },
+        "model_training": {
+          "passed": false,
+          "initial_loss": 1.2084970474243164,
+          "final_loss": 1.1013802886009216,
+          "loss_decreased": true,
+          "model_in_eval_mode": true,
+          "param_changed": false
+        },
+        "loss_calculation": {
+          "passed": "tensor(True)",
+          "loss_reasonable": true,
+          "loss_consistent": "True",
+          "gradient_present": "tensor(True)",
+          "loss_value": 0.958870530128479,
+          "loss_variance": 0.0
+        },
+        "training_inference_alignment": {
+          "passed": true,
+          "predictions_different": true,
+          "eval_consistent": true,
+          "losses_different": true,
+          "train_loss": 0.2831741273403168,
+          "inference_loss": 0.2815728187561035
+        }
+      }
+    }
+  },
+  "recommendations": [
+    "Some test suites failed - review the detailed results above.",
+    "Focus on fixing the failed test suites before proceeding.",
+    "Ensure all data loading and preprocessing is consistent.",
+    "Verify that model training and inference use the same criteria.",
+    "Pay special attention to the inference pipeline normalization fix.",
+    "Ensure model behavior is consistent across different modes.",
+    "Review the training data loading and sequence creation logic."
+  ]
+}

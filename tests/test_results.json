@@ -1,0 +1,60 @@
+{
+  "sequence_creation": {
+    "passed": false,
+    "train_shape": [
+      50,
+      36,
+      7
+    ],
+    "inference_shape": [
+      63,
+      36,
+      7
+    ],
+    "train_sequences_count": 50,
+    "inference_sequences_count": 63
+  },
+  "data_loading": {
+    "passed": "True",
+    "data_shape": [
+      100
+    ],
+    "unnorm_params": {
+      "mean": 47750.0,
+      "std": 250.0
+    }
+  },
+  "normalization": {
+    "passed": true,
+    "original_range": [
+      49608.773590253084,
+      50330.44390754566
+    ],
+    "denormalized_range": [
+      49608.773590253084,
+      50330.44390754566
+    ],
+    "mean": 50002.89126025668,
+    "std": 100.70168313287738
+  },
+  "model_behavior": {
+    "passed": true,
+    "outputs": [
+      -0.26280754804611206,
+      -0.26280754804611206,
+      -0.26280754804611206,
+      -0.26280754804611206,
+      -0.26280754804611206
+    ],
+    "output_variance": 0.0,
+    "train_eval_difference": 0.003017723560333252
+  },
+  "training_inference": {
+    "passed": true,
+    "train_loss": 0.9135000705718994,
+    "inference_loss": 0.9134833812713623,
+    "eval_loss": 0.9134833812713623,
+    "loss_difference": 1.6689300537109375e-05,
+    "eval_consistency": true
+  }
+}

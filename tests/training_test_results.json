@@ -1,0 +1,59 @@
+{
+  "sequence_criteria": {
+    "passed": false,
+    "sequence_shape": [
+      50,
+      36,
+      7
+    ],
+    "label_shape": [
+      50
+    ],
+    "expected_sequences": 51
+  },
+  "data_loading": {
+    "passed": true,
+    "features_present": true,
+    "normalized_correctly": "True",
+    "unorm_params_present": true,
+    "consistent_lengths": true,
+    "feature_lengths": [
+      86,
+      86,
+      86,
+      86,
+      86,
+      86,
+      86,
+      86,
+      86,
+      86,
+      86,
+      86
+    ]
+  },
+  "model_training": {
+    "passed": false,
+    "initial_loss": 1.2084970474243164,
+    "final_loss": 1.1013802886009216,
+    "loss_decreased": true,
+    "model_in_eval_mode": true,
+    "param_changed": false
+  },
+  "loss_calculation": {
+    "passed": "tensor(True)",
+    "loss_reasonable": true,
+    "loss_consistent": "True",
+    "gradient_present": "tensor(True)",
+    "loss_value": 0.958870530128479,
+    "loss_variance": 0.0
+  },
+  "training_inference_alignment": {
+    "passed": true,
+    "predictions_different": true,
+    "eval_consistent": true,
+    "losses_different": true,
+    "train_loss": 0.2831741273403168,
+    "inference_loss": 0.2815728187561035
+  }
+}

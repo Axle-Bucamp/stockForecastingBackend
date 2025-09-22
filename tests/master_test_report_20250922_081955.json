@@ -1,0 +1,48 @@
+{
+  "test_run_info": {
+    "start_time": "2025-09-22T08:19:55.317360",
+    "end_time": "2025-09-22T08:20:08.122729",
+    "duration_seconds": 12.805369,
+    "total_suites": 3,
+    "successful_suites": 0,
+    "success_rate": 0.0
+  },
+  "test_results": {
+    "Inference Fix Validation Tests": {
+      "file": "test_inference_fix.py",
+      "name": "Inference Fix Validation Tests",
+      "return_code": 1,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\dying\\Documents\\stockForecastingBackend\\test_inference_fix.py\", line 274, in <module>\n    exit(main())\n         ^^^^^^\n  File \"C:\\Users\\dying\\Documents\\stockForecastingBackend\\test_inference_fix.py\", line 261, in main\n    print(\"\\U0001f527 Hygdra Forecasting - Inference Fix Validation\")\n  File \"C:\\Users\\dying\\AppData\\Roaming\\uv\\python\\cpython-3.12.11-windows-x86_64-none\\Lib\\encodings\\cp1252.py\", line 19, in encode\n    return codecs.charmap_encode(input,self.errors,encoding_table)[0]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nUnicodeEncodeError: 'charmap' codec can't encode character '\\U0001f527' in position 0: character maps to <undefined>\n",
+      "success": false,
+      "timestamp": "2025-09-22T08:19:58.636660"
+    },
+    "Model Consistency Tests": {
+      "file": "test_model_consistency.py",
+      "name": "Model Consistency Tests",
+      "return_code": 1,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\dying\\Documents\\stockForecastingBackend\\test_model_consistency.py\", line 473, in <module>\n    exit(main())\n         ^^^^^^\n  File \"C:\\Users\\dying\\Documents\\stockForecastingBackend\\test_model_consistency.py\", line 449, in main\n    print(\"\\U0001f50d Hygdra Forecasting - Model Consistency Test Suite\")\n  File \"C:\\Users\\dying\\AppData\\Roaming\\uv\\python\\cpython-3.12.11-windows-x86_64-none\\Lib\\encodings\\cp1252.py\", line 19, in encode\n    return codecs.charmap_encode(input,self.errors,encoding_table)[0]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nUnicodeEncodeError: 'charmap' codec can't encode character '\\U0001f50d' in position 0: character maps to <undefined>\n",
+      "success": false,
+      "timestamp": "2025-09-22T08:20:03.628796"
+    },
+    "Training Consistency Tests": {
+      "file": "test_training_consistency.py",
+      "name": "Training Consistency Tests",
+      "return_code": 1,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\dying\\Documents\\stockForecastingBackend\\test_training_consistency.py\", line 539, in <module>\n    exit(main())\n         ^^^^^^\n  File \"C:\\Users\\dying\\Documents\\stockForecastingBackend\\test_training_consistency.py\", line 515, in main\n    print(\"\\U0001f3af Hygdra Forecasting - Training Consistency Test Suite\")\n  File \"C:\\Users\\dying\\AppData\\Roaming\\uv\\python\\cpython-3.12.11-windows-x86_64-none\\Lib\\encodings\\cp1252.py\", line 19, in encode\n    return codecs.charmap_encode(input,self.errors,encoding_table)[0]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nUnicodeEncodeError: 'charmap' codec can't encode character '\\U0001f3af' in position 0: character maps to <undefined>\n",
+      "success": false,
+      "timestamp": "2025-09-22T08:20:08.119727"
+    }
+  },
+  "recommendations": [
+    "Some test suites failed - review the detailed results above.",
+    "Focus on fixing the failed test suites before proceeding.",
+    "Ensure all data loading and preprocessing is consistent.",
+    "Verify that model training and inference use the same criteria.",
+    "Pay special attention to the inference pipeline normalization fix.",
+    "Ensure model behavior is consistent across different modes.",
+    "Review the training data loading and sequence creation logic."
+  ]
+}
